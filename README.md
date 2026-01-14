@@ -11,7 +11,7 @@ An application, 'kahdifire' and a GCC plugin 'c_decls_to_xml.so', which transfor
 * [Example](#example)
 * [Issues and Limitations](#known-issues-and-limitations)
 * [Getting Help](#getting-help)
-* [License Terms](#license)
+* [License](#license)
 
 <a id="introduction"></a>
 ## Introduction
@@ -372,6 +372,8 @@ void example_person_set_last_name(person *instance, char *last_name)
 }
 
 ```
+
+[Back to Table of Contents](#TOC)
 
 <a id="known-issues-and-limitations"></a>
 ## Known issues and limitations
