@@ -1,6 +1,6 @@
 # kahdifire - C enum, struct and union code generator
 
-An application, 'kahdifire' and a GCC plugin 'c_decls_to_xml.so', which transform C enum, struct and union declarations into code modules
+@b kahdifire, an application, and @b c_decls_to_xml.so, a GCC plugin, which transform C enum, struct and union declarations into code modules
 
 <a id="TOC"></a>
 ## Table of contents
