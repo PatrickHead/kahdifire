@@ -78,7 +78,9 @@ void gen_doxygen_configuration(xmlDocPtr doc, char *base_name)
   tmp = strdup(base_name);
   if (!tmp) goto exit;
 
-  base_dir = dirname(tmp);
+  base_dir = strdup(dirname(tmp));
+
+  free(tmp);
 
   project_name = get_project_name(base_name);
   if (!project_name) goto exit;
