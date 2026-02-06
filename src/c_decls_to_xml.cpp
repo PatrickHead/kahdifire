@@ -33,7 +33,6 @@
 #include <c-family/c-common.h>
 #include <plugin-version.h>
 
-#include "strapp.h"
 #include "c_decls_to_xml.h"
 
 int plugin_is_GPL_compatible; /**< must be defined for the plugin to run */
@@ -106,6 +105,8 @@ static void add_user_type_reference(char **xml_str,
                                     const_tree base_type,
                                     const char *name,
                                     int indent_level);
+static char *strapp(char *s1, char *s2);
+
 
   /*
    *  Globals
@@ -1342,5 +1343,32 @@ static void set_indent(int indent)
 {
   if (indent < 0) indent = 0;
   _indent = indent;
+}
+
+static char *strapp(char *s1, char *s2)
+{
+  int len1, len2;
+  char *tmp;
+
+  if (!s1)
+  {
+    s1 = (char *)xmalloc(1);
+    if (!s1) return NULL;
+    *s1 = 0;
+  }
+
+  if (!s2) return s1;
+
+  len1 = strlen(s1);
+  len2 = strlen(s2);
+
+  tmp = (char *)xrealloc(s1, len1 + len2 + 1);
+  if (tmp)
+  {
+    s1 = tmp;
+    strcat(s1, s2);
+  }
+
+  return s1;
 }
 

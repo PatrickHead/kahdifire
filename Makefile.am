@@ -7,7 +7,7 @@ ARFLAGS = cr
 PLUGIN_INCLUDE = @GCC_PLUGIN_INCLUDE@
 
 pkglib_LTLIBRARIES = c_decls_to_xml.la
-c_decls_to_xml_la_SOURCES = src/c_decls_to_xml.cpp src/strapp.c
+c_decls_to_xml_la_SOURCES = src/c_decls_to_xml.cpp
 c_decls_to_xml_la_CXXFLAGS = -O3 -g0 -Wall -I$(PLUGIN_INCLUDE) -fpic -shared -fno-inline-functions
 c_decls_to_xml_la_LDFLAGS = -module
 
