@@ -110,12 +110,13 @@ exit:
    *  Nothing.
    */
   
-void emit_aggregate_avl(FILE *outfile, xmlNodePtr node, int indent)
+bool emit_aggregate_avl(FILE *outfile, xmlNodePtr node, int indent)
 {
   char *name = NULL;
   char *avl_name = NULL;
   int len;
   int is_doxygen = 0;
+  bool did_it = false;
 
   if (!option_gen_avl()) goto exit;
 
@@ -163,13 +164,17 @@ void emit_aggregate_avl(FILE *outfile, xmlNodePtr node, int indent)
   emit_indent(outfile, indent);
   fprintf(outfile, "}");
 
+  did_it = true;
+
 exit:
   if (name) free(name);
   if (avl_name) free(avl_name);
+
+  return did_it;
 }
 
   /**
-   *  @fn void emit_aggregate_avl_node(FILE *outfile,
+   *  @fn bool emit_aggregate_avl_node(FILE *outfile,
    *                                    xmlNodePtr node,
    *                                    int indent)
    *
@@ -180,17 +185,17 @@ exit:
    *  @param node - xmlNodePtr containing struct or union element
    *  @param indent - indent level for output
    *
-   *  @par Returns
-   *  Nothing.
+   *  @return true if emitted, false otherwise
    */
   
-void emit_aggregate_avl_node(FILE *outfile, xmlNodePtr node, int indent)
+bool emit_aggregate_avl_node(FILE *outfile, xmlNodePtr node, int indent)
 {
   char *name = NULL;
   char *node_name = NULL;
   char *field = NULL;
   int len;
   int is_doxygen = 0;
+  bool did_it = false;
 
   if (!option_gen_avl()) goto exit;
 
@@ -265,9 +270,13 @@ void emit_aggregate_avl_node(FILE *outfile, xmlNodePtr node, int indent)
   emit_indent(outfile, indent);
   fprintf(outfile, "}");
 
+  did_it = true;
+
 exit:
   if (name) free(name);
   if (node_name) free(node_name);
+
+  return did_it;
 }
 
   /**

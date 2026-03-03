@@ -60,5 +60,9 @@ bool option_gen_readme(void);
 void option_gen_readme_on(void);
 void option_gen_readme_off(void);
 
+bool option_assume_typedefs(void);
+void option_assume_typedefs_on(void);
+void option_assume_typedefs_off(void);
+
 #endif //OPTIONS_H
 

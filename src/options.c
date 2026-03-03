@@ -394,3 +394,43 @@ void option_gen_readme_on(void) { _gen_readme = true; }
 
 void option_gen_readme_off(void) { _gen_readme = false; }
 
+static bool _assume_typedefs = false;
+
+  /**
+   *  @fn bool option_assume_typedefs(void)
+   *  @brief  returns gen readme setting
+   *
+   *  @par Parameters
+   *       None.
+   *
+   *  @return current readme generation setting
+   */
+
+bool option_assume_typedefs(void) { return _assume_typedefs; }
+
+  /**
+   *  @fn void option_assume_typedefs_on(void)
+   *  @brief  turns readme generation on
+   *
+   *  @par Parameters
+   *       None.
+   *
+   *  @par Returns
+   *       Nothing.
+   */
+
+void option_assume_typedefs_on(void) { _assume_typedefs = true; }
+
+  /**
+   *  @fn void option_assume_typedefs_off(void)
+   *  @brief  turns readme generation off
+   *
+   *  @par Parameters
+   *       None.
+   *
+   *  @par Returns
+   *       Nothing.
+   */
+
+void option_assume_typedefs_off(void) { _assume_typedefs = false; }
+

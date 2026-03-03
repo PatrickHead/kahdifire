@@ -63,7 +63,7 @@ int main(int argc, char **argv)
   char *input_name = NULL;
   int retval = 0;
 
-  while ((c = getopt(argc, argv, "b:a:l:g:hmM:r")) != EOF)
+  while ((c = getopt(argc, argv, "b:a:l:g:hmM:tr")) != EOF)
   {
     switch (c)
     {
@@ -93,6 +93,10 @@ int main(int argc, char **argv)
 
       case 'g':
         option_set_generator_options(optarg);
+        break;
+
+      case 't':
+        option_assume_typedefs_on();
         break;
 
       case 'h':
@@ -145,7 +149,7 @@ void usage(void)
   printf("    kahdifire [-a <annotation>] [-b <base name>] [-l <license type>] "
          "[-m]\n"
          "              [-M <makefile options>] [-r] [-g <generator options>]\n" 
-         "              <input file>\n");
+         "              [-t] <input file>\n");
   printf("\n");
   printf("    kahdifire -h\n");
   printf("\n");
@@ -181,6 +185,8 @@ void usage(void)
   printf("    -m = generate a makefile\n");
   printf("\n");
   printf("    -r = generate a README.md file\n");
+  printf("\n");
+  printf("    -t = assume user defined types have typedefs\n");
   printf("\n");
   printf("    -h = this help display\n");
   printf("\n");

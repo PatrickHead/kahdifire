@@ -59,7 +59,7 @@ static void emit_enum_annotation(FILE *outfile,
                                  char *name,
                                  int indent);
 static void emit_enum_items(FILE *outfile, xmlNodePtr node, int indent);
-static void emit_aggregate(FILE *outfile, xmlNodePtr node, int indent);
+static bool emit_aggregate(FILE *outfile, xmlNodePtr node, int indent);
 static void emit_aggregate_annotation(FILE *outfile,
                                       xmlNodePtr node,
                                       char *name,
@@ -181,18 +181,18 @@ void gen_header(xmlDocPtr doc, char *base_name)
     else if (!strcmp((char *)node->name, "struct") ||
              !strcmp((char *)node->name, "union"))
     {
-      emit_aggregate(outfile, node, 0);
-      fprintf(outfile, ";\n\n");
-      emit_aggregate_array(outfile, node, 0);
-      fprintf(outfile, ";\n\n");
-      emit_aggregate_list_node(outfile, node, 0);
-      fprintf(outfile, ";\n\n");
-      emit_aggregate_list(outfile, node, 0);
-      fprintf(outfile, ";\n\n");
-      emit_aggregate_avl_node(outfile, node, 0);
-      fprintf(outfile, ";\n\n");
-      emit_aggregate_avl(outfile, node, 0);
-      fprintf(outfile, ";\n\n");
+      if (emit_aggregate(outfile, node, 0))
+        fprintf(outfile, ";\n\n");
+      if (emit_aggregate_array(outfile, node, 0))
+        fprintf(outfile, ";\n\n");
+      if (emit_aggregate_list_node(outfile, node, 0))
+        fprintf(outfile, ";\n\n");
+      if (emit_aggregate_list(outfile, node, 0))
+        fprintf(outfile, ";\n\n");
+      if (emit_aggregate_avl_node(outfile, node, 0))
+        fprintf(outfile, ";\n\n");
+      if (emit_aggregate_avl(outfile, node, 0))
+        fprintf(outfile, ";\n\n");
     }
     else
       continue;
@@ -399,7 +399,7 @@ exit:
 }
 
   /**
-   *  @fn void emit_aggregate(FILE *outfile, xmlNodePtr node, int indent)
+   *  @fn bool emit_aggregate(FILE *outfile, xmlNodePtr node, int indent)
    *
    *  @brief emits struct or union code from @p node to @p outfile
    *
@@ -407,13 +407,13 @@ exit:
    *  @param node - xmlNodePtr containing struct or union element
    *  @param indent - indent level for output
    *
-   *  @par Returns
-   *  Nothing.
+   *  @return true if aggregate emitted, false if not
    */
   
-static void emit_aggregate(FILE *outfile, xmlNodePtr node, int indent)
+static bool emit_aggregate(FILE *outfile, xmlNodePtr node, int indent)
 {
   char *name = NULL;
+  bool did_it = false;
 
   if (!outfile || !node) goto exit;
 
@@ -443,8 +443,12 @@ static void emit_aggregate(FILE *outfile, xmlNodePtr node, int indent)
   emit_indent(outfile, indent);
   fprintf(outfile, "}");
 
+  did_it = true;
+
 exit:
   if (name) free(name);
+
+  return did_it;
 }
 
   /**
@@ -863,7 +867,10 @@ static void emit_type_reference(FILE *outfile, xmlNodePtr node, int indent)
 
   emit_indent(outfile, indent);
 
-  fprintf(outfile, "%s %s", type, name);
+  if (option_assume_typedefs())
+    fprintf(outfile, "%s", name);
+  else
+    fprintf(outfile, "%s %s", type, name);
 
 exit:
   if (name) free(name);

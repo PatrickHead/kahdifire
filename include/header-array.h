@@ -29,7 +29,7 @@
 
 #include "common.h"
 
-void emit_aggregate_array(FILE *outfile, xmlNodePtr node, int indent);
+bool emit_aggregate_array(FILE *outfile, xmlNodePtr node, int indent);
 void emit_aggregate_array_function_prototypes(FILE *outfile,
                                               xmlNodePtr node,
                                               char *project_name);

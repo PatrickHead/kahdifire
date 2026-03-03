@@ -38,7 +38,7 @@ static void emit_aggregate_array_annotation(FILE *outfile,
                                             int indent);
 
   /**
-   *  @fn void emit_aggregate_array(FILE *outfile, xmlNodePtr node, int indent)
+   *  @fn bool emit_aggregate_array(FILE *outfile, xmlNodePtr node, int indent)
    *
    *  @brief emits array struct for struct or union from @p node to @p outfile
    *
@@ -46,17 +46,17 @@ static void emit_aggregate_array_annotation(FILE *outfile,
    *  @param node - xmlNodePtr containing struct or union element
    *  @param indent - indent level for output
    *
-   *  @par Returns
-   *  Nothing.
+   *  @return true if aggregate_array emitted, false otherwise
    */
   
-void emit_aggregate_array(FILE *outfile, xmlNodePtr node, int indent)
+bool emit_aggregate_array(FILE *outfile, xmlNodePtr node, int indent)
 {
   char *name = NULL;
   char *array_name = NULL;
   char *field = NULL;
   int len;
   int is_doxygen = 0;
+  bool did_it = false;
 
   if (!option_gen_array()) goto exit;
 
@@ -123,10 +123,14 @@ void emit_aggregate_array(FILE *outfile, xmlNodePtr node, int indent)
   emit_indent(outfile, indent);
   fprintf(outfile, "}");
 
+  did_it = true;
+
 exit:
   if (name) free(name);
   if (array_name) free(array_name);
   if (field) free(field);
+
+  return did_it;
 }
 
   /**
