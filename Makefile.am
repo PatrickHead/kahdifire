@@ -11,9 +11,6 @@ c_decls_to_xml_la_SOURCES = src/c_decls_to_xml.cpp
 c_decls_to_xml_la_CXXFLAGS = -O3 -g0 -Wall -I$(PLUGIN_INCLUDE) -fpic -shared -fno-inline-functions
 c_decls_to_xml_la_LDFLAGS = -module
 
-# is the following required?
-#noinst_PROGRAMS =
-
 bin_PROGRAMS = bin/kahdifire
 bin_kahdifire_SOURCES = src/annotation.c src/common.c src/doxygen.c src/header-array.c src/header-avl.c src/header-list.c src/header.c src/kahdifire.c src/license.c src/makefile.c src/options.c src/readme.c src/source-array.c src/source-avl.c src/source-list.c src/source.c src/strapp.c
 bin_kahdifire_CFLAGS = -O3 -g0 -Wall $(LIBXML2_CFLAGS) -fno-inline-functions

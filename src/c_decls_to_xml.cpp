@@ -973,7 +973,6 @@ static void add_void(char **xml_str, int indent_level)
   
 static void add_bitfield(char **xml_str, tree field, int indent_level)
 {
-#warning, add_bitfield() is BROKEN
   tree field_type;
   char num_str[32];
 
@@ -1092,8 +1091,10 @@ static void add_c_decl(char **xml_str,
     add_to_dumped_structs(name);
   }
 
+/* no longer seems to be necessary
   if (!COMPLETE_TYPE_P(base_type))
     goto exit;
+*/
 
   if (!is_struct(base_type) && !is_union(base_type) && !is_enum(base_type))
     goto exit;
@@ -1224,6 +1225,7 @@ static void finish_type(void *event_data, void *user_data)
 static void finish(void *event_data, void *user_data)
 {
   char **xml_str = (char **)user_data;
+  char *name;
 
     // all leftovers
   for (list *iter = to_dump._list.next; iter != NULL; iter = iter->next)
@@ -1238,7 +1240,12 @@ static void finish(void *event_data, void *user_data)
     {
         // items added to the list are surely named.
       if (TYPE_IDENTIFIER(n->type))
-        add_c_decl(xml_str, n->type, get_type_name(n->type), 0);
+      {
+        name = (char *)get_type_name(n->type);
+
+        if (!target || !strcmp(target, name))
+          add_c_decl(xml_str, n->type, name, 0);
+      }
     }
   }
 
