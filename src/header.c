@@ -1317,6 +1317,8 @@ static void emit_aggregate_field_function_prototypes(FILE *outfile,
     }
     else if (!strcmp((char *)child->name, "scalar"))
       type_name = get_attribute(child, "type-name");
+    else if (!strcmp((char *)child->name, "bitfield"))
+      type_name = strdup("uint32_t");
     else if (!strcmp((char *)child->name, "type-reference"))
     {
       tmp1 = get_attribute(child, "type");
