@@ -1029,6 +1029,9 @@ static void emit_header_includes(FILE *outfile)
   int add_newline = 0;
   char *incl = NULL;
 
+  fprintf(outfile, "#include <stdbool.h>\n");
+  fprintf(outfile, "#include <stdint.h>\n");
+
   if (option_gen_list())
   {
     add_newline = 1;
@@ -1047,11 +1050,10 @@ static void emit_header_includes(FILE *outfile)
        incl;
        incl = option_get_next_include())
   {
-    add_newline = 1;
     fprintf(outfile, "#include \"%s\"\n", incl);
   }
 
-  if (add_newline) fprintf(outfile, "\n");
+  fprintf(outfile, "\n");
 }
 
   /**
