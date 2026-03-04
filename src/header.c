@@ -217,9 +217,9 @@ void gen_header(xmlDocPtr doc, char *base_name)
   for (node = root->children; node; node = node->next)
     emit_function_prototypes(outfile, node, project_name);
 
-  emit_header_guard_end(outfile, project_name);
-
   emit_header_cpp_compat_end(outfile);
+
+  emit_header_guard_end(outfile, project_name);
 
 exit:
   if (outfile) fclose(outfile);
