@@ -549,6 +549,8 @@ static void emit_fields(FILE *outfile, xmlNodePtr node, int indent)
   arrays *arrs = NULL;
   char *type_name = NULL;
   int i;
+  int bitlen = 0;
+  char *t;
 
   if (!outfile || !node) goto exit;
 
@@ -557,6 +559,7 @@ static void emit_fields(FILE *outfile, xmlNodePtr node, int indent)
     name = NULL;
     n_pointers = 0;
     type_child = NULL;
+    bitlen = 0;
 
     if (!strcmp((char *)node->name, "field"))
     {
@@ -585,6 +588,12 @@ static void emit_fields(FILE *outfile, xmlNodePtr node, int indent)
         }
         else if (!strcmp((char *)child->name, "scalar"))
           type_name = get_attribute(child, "type-name");
+        else if (!strcmp((char *)child->name, "bitfield"))
+        {
+          type_name = strdup("uint32_t");
+          bitlen = atoi(t = get_attribute(child, "size"));
+          if (t) free(t);
+        }
         else if (!strcmp((char *)child->name, "enum") ||
                  !strcmp((char *)child->name, "struct") ||
                  !strcmp((char *)child->name, "union") ||
@@ -634,6 +643,8 @@ static void emit_fields(FILE *outfile, xmlNodePtr node, int indent)
             fprintf(outfile, "[]");
         }
       }
+
+      if (bitlen) fprintf(outfile, ":%d", bitlen);
 
       if ((option_annotation() == annotation_type_doxygen) &&
           (!type_child || (type_child && name)))
