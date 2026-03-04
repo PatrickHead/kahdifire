@@ -1037,34 +1037,29 @@ exit:
   
 static void emit_header_includes(FILE *outfile)
 {
-  int add_newline = 0;
+  bool add_newline = false;
   char *incl = NULL;
 
   fprintf(outfile, "#include <stdbool.h>\n");
   fprintf(outfile, "#include <stdint.h>\n");
 
   if (option_gen_list())
-  {
-    add_newline = 1;
     fprintf(outfile, "#include <llist.h>\n");
-  }
 
   if (option_gen_avl())
-  {
-    add_newline = 1;
     fprintf(outfile, "#include <avl.h>\n");
-  }
 
-  if (add_newline) fprintf(outfile, "\n");
+  fprintf(outfile, "\n");
 
   for (incl = option_get_first_include();
        incl;
        incl = option_get_next_include())
   {
+    add_newline = true;
     fprintf(outfile, "#include \"%s\"\n", incl);
   }
 
-  fprintf(outfile, "\n");
+  if (add_newline) fprintf(outfile, "\n");
 }
 
   /**
