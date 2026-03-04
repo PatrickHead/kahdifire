@@ -20,6 +20,7 @@
  *  @brief tracks code generation options
  */
 
+#include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -433,4 +434,135 @@ void option_assume_typedefs_on(void) { _assume_typedefs = true; }
    */
 
 void option_assume_typedefs_off(void) { _assume_typedefs = false; }
+
+char **_include_files = NULL;
+unsigned _n_include_files = 0;
+unsigned _curr_include_file = 0;
+
+  /**
+   *  @fn void option_set_includes(char *inc_list);
+   *  @brief  sets list of include files to be emitted in header
+   *
+   *  @param inc_list - ':' separated list of include file names
+   *
+   *  @par Returns
+   *       Nothing.
+   */
+
+void option_set_includes(char *inc_list)
+{
+  char *fn;
+  char *fn_end;
+  int n_fns = 0;
+  int i;
+
+  if (_n_include_files)
+  {
+    for (i = 0; i < _n_include_files; i++)
+      free(_include_files[i]);
+    free(_include_files);
+    _include_files = NULL;
+    _n_include_files = 0;
+  }
+
+  if (!inc_list) goto exit;
+
+  n_fns = 1;
+
+  fn = inc_list;
+  while (*fn)
+  {
+    if (*fn == ':') ++n_fns;
+    ++fn;
+  }
+
+  _include_files = malloc(sizeof(char *) * (n_fns + 1));
+  if (!_include_files) goto exit;
+  _n_include_files = n_fns;
+  memset(_include_files, 0, sizeof(char *) * (n_fns + 1));
+
+  for (fn = fn_end = inc_list, i = 0; i < n_fns; i++)
+  {
+    while (*fn_end && (*fn_end != ':')) ++fn_end;
+    _include_files[i] = strndup(fn, fn_end - fn);
+    if (*fn_end == ':') ++fn_end;
+    fn = fn_end;
+  }
+
+exit:
+  return;
+}
+
+  /**
+   *  @fn char *option_get_first_include(void);
+   *  @brief  returns first include file in list
+   *
+   *  @par Parameters
+   *       None.
+   *
+   *  @return string containing include file name
+   */
+
+char *option_get_first_include(void)
+{
+  if (!_n_include_files) return NULL;
+  return _include_files[_curr_include_file++];
+}
+
+  /**
+   *  @fn char *option_get_next_include(void);
+   *  @brief  returns next include file in list
+   *
+   *  @par Parameters
+   *       None.
+   *
+   *  @return string containing include file name
+   */
+
+char *option_get_next_include(void)
+{
+  if (_curr_include_file >= _n_include_files) return NULL;
+  if (!_include_files[_curr_include_file]) return NULL;
+  return _include_files[_curr_include_file++];
+}
+
+bool _cpp_compatible = false;
+
+  /**
+   *  @fn bool option_cpp_compatible(void)
+   *  @brief  returns cpp compatible setting
+   *
+   *  @par Parameters
+   *       None.
+   *
+   *  @return current cpp compatible setting
+   */
+
+bool option_cpp_compatible(void) { return _cpp_compatible; }
+
+  /**
+   *  @fn void option_cpp_compatible_on(void)
+   *  @brief  turns cpp compatibility on
+   *
+   *  @par Parameters
+   *       None.
+   *
+   *  @par Returns
+   *       Nothing.
+   */
+
+void option_cpp_compatible_on(void) { _cpp_compatible = true; }
+
+  /**
+   *  @fn void option_cpp_compatible_off(void)
+   *  @brief  turns cpp compatibility off
+   *
+   *  @par Parameters
+   *       None.
+   *
+   *  @par Returns
+   *       Nothing.
+   */
+
+void option_cpp_compatible_off(void) { _cpp_compatible = false; }
 

@@ -63,7 +63,7 @@ int main(int argc, char **argv)
   char *input_name = NULL;
   int retval = 0;
 
-  while ((c = getopt(argc, argv, "b:a:l:g:hmM:tr")) != EOF)
+  while ((c = getopt(argc, argv, "b:a:l:g:hmM:i:tcr")) != EOF)
   {
     switch (c)
     {
@@ -97,6 +97,14 @@ int main(int argc, char **argv)
 
       case 't':
         option_assume_typedefs_on();
+        break;
+
+      case 'i':
+        option_set_includes(optarg);
+        break;
+
+      case 'c':
+        option_cpp_compatible_on();
         break;
 
       case 'h':
@@ -149,7 +157,7 @@ void usage(void)
   printf("    kahdifire [-a <annotation>] [-b <base name>] [-l <license type>] "
          "[-m]\n"
          "              [-M <makefile options>] [-r] [-g <generator options>]\n" 
-         "              [-t] <input file>\n");
+         "              [-t] [-i <include list>] <input file>\n");
   printf("\n");
   printf("    kahdifire -h\n");
   printf("\n");
@@ -182,11 +190,16 @@ void usage(void)
   printf("\n");
   printf("    <input file> is name of XML file containing C declarations\n");
   printf("\n");
+  printf("    <include list> is ':' separated list of include files for "
+         "header\n");
+  printf("\n");
   printf("    -m = generate a makefile\n");
   printf("\n");
   printf("    -r = generate a README.md file\n");
   printf("\n");
   printf("    -t = assume user defined types have typedefs\n");
+  printf("\n");
+  printf("    -c = add C++ compatibility #defines to header\n");
   printf("\n");
   printf("    -h = this help display\n");
   printf("\n");

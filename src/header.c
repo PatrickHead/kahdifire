@@ -46,6 +46,8 @@
 
 static void emit_header_guard_start(FILE *outfile, char *project_name);
 static void emit_header_guard_end(FILE *outfile, char *project_name);
+static void emit_header_cpp_compat_start(FILE *outfile);
+static void emit_header_cpp_compat_end(FILE *outfile);
 static void emit_header_annotation(FILE *outfile, char *file_name);
 static void emit_header_includes(FILE *outfile);
 static void emit_typedef(FILE *outfile, xmlNodePtr node, int indent);
@@ -140,6 +142,8 @@ void gen_header(xmlDocPtr doc, char *base_name)
 
   emit_header_guard_start(outfile, project_name);
 
+  emit_header_cpp_compat_start(outfile);
+
     // Emit warning about USER ANNOTATION
 
   fprintf(outfile, "#warning find and replace all occurences of USER ANNOTATION, then remove this line\n\n");
@@ -214,6 +218,8 @@ void gen_header(xmlDocPtr doc, char *base_name)
     emit_function_prototypes(outfile, node, project_name);
 
   emit_header_guard_end(outfile, project_name);
+
+  emit_header_cpp_compat_end(outfile);
 
 exit:
   if (outfile) fclose(outfile);
@@ -918,6 +924,54 @@ static void emit_header_guard_end(FILE *outfile, char *project_name)
 }
 
   /**
+   *  @fn void emit_header_cpp_compat_start(FILE *outfile)
+   *
+   *  @brief emits opening C++ compatibility #define to @p outfile
+   *
+   *  @param outfile - open FILE * for writing
+   *
+   *  @par Returns
+   *  Nothing.
+   */
+  
+static void emit_header_cpp_compat_start(FILE *outfile)
+{
+  if (!outfile) return;
+
+  if (option_cpp_compatible())
+  {
+    fprintf(outfile, "#ifdef __cplusplus\n");
+    fprintf(outfile, "extern \"C\" {\n");
+    fprintf(outfile, "#endif\n");
+    fprintf(outfile, "\n");
+  }
+}
+
+  /**
+   *  @fn void emit_header_cpp_compat_end(FILE *outfile)
+   *
+   *  @brief emits closing C++ compatibility #define to @p outfile
+   *
+   *  @param outfile - open FILE * for writing
+   *
+   *  @par Returns
+   *  Nothing.
+   */
+  
+static void emit_header_cpp_compat_end(FILE *outfile)
+{
+  if (!outfile) return;
+
+  if (option_cpp_compatible())
+  {
+    fprintf(outfile, "#ifdef __cplusplus\n");
+    fprintf(outfile, "}\n");
+    fprintf(outfile, "#endif\n");
+    fprintf(outfile, "\n");
+  }
+}
+
+  /**
    *  @fn void emit_header_annotation(FILE *outfile, char *file_name)
    *
    *  @brief emits global header annotation
@@ -974,17 +1028,28 @@ exit:
 static void emit_header_includes(FILE *outfile)
 {
   int add_newline = 0;
+  char *incl = NULL;
 
   if (option_gen_list())
   {
     add_newline = 1;
-    fprintf(outfile, "#include \"llist.h\"\n");
+    fprintf(outfile, "#include <llist.h>\n");
   }
 
   if (option_gen_avl())
   {
     add_newline = 1;
-    fprintf(outfile, "#include \"avl.h\"\n");
+    fprintf(outfile, "#include <avl.h>\n");
+  }
+
+  if (add_newline) fprintf(outfile, "\n");
+
+  for (incl = option_get_first_include();
+       incl;
+       incl = option_get_next_include())
+  {
+    add_newline = 1;
+    fprintf(outfile, "#include \"%s\"\n", incl);
   }
 
   if (add_newline) fprintf(outfile, "\n");

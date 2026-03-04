@@ -64,5 +64,13 @@ bool option_assume_typedefs(void);
 void option_assume_typedefs_on(void);
 void option_assume_typedefs_off(void);
 
+void option_set_includes(char *inc_list);
+char *option_get_first_include(void);
+char *option_get_next_include(void);
+
+bool option_cpp_compatible(void);
+void option_cpp_compatible_on(void);
+void option_cpp_compatible_off(void);
+
 #endif //OPTIONS_H
 
