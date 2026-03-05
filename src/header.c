@@ -1120,6 +1120,7 @@ static void emit_enum_function_prototypes(FILE *outfile,
 {
   char *project = NULL;
   char *name = NULL;
+  char *fpre = NULL;
 
   if (!outfile || !node) goto exit;
   if (strcmp((char *)node->name, "enum")) goto exit;
@@ -1130,6 +1131,9 @@ static void emit_enum_function_prototypes(FILE *outfile,
 
   name = get_attribute(node, "name");
   if (!name) goto exit;
+
+  fpre = function_prefix(project, name);
+  if (!fpre) goto exit;
 
   emit_indent(outfile, 1);
   fprintf(outfile, "/*\n");
@@ -1142,14 +1146,17 @@ static void emit_enum_function_prototypes(FILE *outfile,
 
   fprintf(outfile, "\n");
 
-  fprintf(outfile, "%s %s_%s_str_to_type(char *enum_name);\n", name, project, name);
-  fprintf(outfile, "char *%s_%s_type_to_str(%s type);\n", project, name, name);
+  fprintf(outfile, "%s %s_from_str(char *enum_name);\n", name, fpre);
+  fprintf(outfile, "char *%s_to_str(%s type);\n", fpre, name);
 
   fprintf(outfile, "\n");
 
 exit:
   if (project) free(project);
   if (name) free(name);
+  if (fpre) free(fpre);
+
+  return;
 }
 
   /**

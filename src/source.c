@@ -268,7 +268,7 @@ static void emit_enum_functions(FILE *outfile,
   emit_enum_str_to_type_annotation(outfile, node, name, fpre, indent + 1);
 
   fprintf(outfile,
-          "%s %s_str_to_type(char *enum_name)\n",
+          "%s %s_from_str(char *enum_name)\n",
           name,
           fpre);
   fprintf(outfile, "{\n");
@@ -316,7 +316,7 @@ static void emit_enum_functions(FILE *outfile,
 
   emit_enum_type_to_str_annotation(outfile, node, name, fpre, indent + 1);
 
-  fprintf(outfile, "char *%s_type_to_str(%s type)\n", fpre, name);
+  fprintf(outfile, "char *%s_to_str(%s type)\n", fpre, name);
   fprintf(outfile, "{\n");
 
   ++indent;
@@ -1433,7 +1433,7 @@ static void emit_enum_str_to_type_annotation(FILE *outfile,
 
       emit_indent(outfile, indent);
       fprintf(outfile,
-              " *  @fn %s %s_str_to_type(char *enum_name)\n",
+              " *  @fn %s %s_from_str(char *enum_name)\n",
               enum_name,
               function_prefix);
 
@@ -1468,7 +1468,7 @@ static void emit_enum_str_to_type_annotation(FILE *outfile,
 
       emit_indent(outfile, indent);
       fprintf(outfile,
-              " *  %s %s_str_to_type(char *enum_name)\n",
+              " *  %s %s_from_str(char *enum_name)\n",
               enum_name,
               function_prefix);
 
@@ -1551,7 +1551,7 @@ static void emit_enum_type_to_str_annotation(FILE *outfile,
 
       emit_indent(outfile, indent);
       fprintf(outfile,
-              " *  @fn char *%s_type_to_str(%s type)\n",
+              " *  @fn char *%s_to_str(%s type)\n",
               function_prefix,
               enum_name);
 
@@ -1584,7 +1584,7 @@ static void emit_enum_type_to_str_annotation(FILE *outfile,
 
       emit_indent(outfile, indent);
       fprintf(outfile,
-              " *  char *%s_type_to_str(%s type)\n",
+              " *  char *%s_to_str(%s type)\n",
               function_prefix,
               enum_name);
 
