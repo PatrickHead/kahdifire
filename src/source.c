@@ -173,7 +173,21 @@ void gen_source(xmlDocPtr doc, char *base_name)
 
   license_emit(outfile);
 
-  fprintf(outfile, "#warning find and replace all occurences of USER ANNOTATION, then remove this line\n\n");
+    // Emit warning about USER ANNOTATION
+
+  switch (option_annotation())
+  {
+    case annotation_type_text:
+    case annotation_type_doxygen:
+      fprintf(outfile,
+              "#warning find and replace all occurences of "
+              "USER ANNOTATION, then remove this line\n\n");
+      break;
+
+    case annotation_type_none:
+    default:
+      break;
+  }
 
   emit_source_annotation(outfile, basename(outfile_name));
 

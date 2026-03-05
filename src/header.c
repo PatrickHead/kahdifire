@@ -146,7 +146,19 @@ void gen_header(xmlDocPtr doc, char *base_name)
 
     // Emit warning about USER ANNOTATION
 
-  fprintf(outfile, "#warning find and replace all occurences of USER ANNOTATION, then remove this line\n\n");
+  switch (option_annotation())
+  {
+    case annotation_type_text:
+    case annotation_type_doxygen:
+      fprintf(outfile,
+              "#warning find and replace all occurences of "
+              "USER ANNOTATION, then remove this line\n\n");
+      break;
+
+    case annotation_type_none:
+    default:
+      break;
+  }
 
     // Emit project based include files
 
