@@ -16,7 +16,7 @@ bin_kahdifire_SOURCES = src/annotation.c src/common.c src/doxygen.c src/header-a
 bin_kahdifire_CFLAGS = -O3 -g0 -Wall $(LIBXML2_CFLAGS) -fno-inline-functions
 bin_kahdifire_LDADD = $(LIBXML2_LIBS)
 
-EXTRA_DIST = examples man acdoxygen.m4 amdoxygen.am doxygen.kahdifier.cfg .gitignore .gitattributes
+EXTRA_DIST = examples man acdoxygen.m4 amdoxygen.am doxygen.kahdifire.cfg .gitignore .gitattributes
 
 man1_MANS = man/kahdifire.1
 dist_man_man1_MANS = man/kahdifire.1

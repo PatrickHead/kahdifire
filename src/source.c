@@ -482,7 +482,7 @@ static void emit_aggregate_new_function(FILE *outfile,
   fprintf(outfile,
           "%s *%s_new(void)\n",
           name,
-          fpre);
+          fpre ? fpre : "UNKNOWN");
   fprintf(outfile, "{\n");
 
   ++indent;
@@ -724,9 +724,8 @@ static void emit_aggregate_dup_function(FILE *outfile,
                 type_name);
 
         emit_indent(outfile, indent);
-        fprintf(outfile, "%s_free(tmp_%s_struct);\n",
-                fpre2,
-                name);
+        //fprintf(outfile, "%s_free(tmp_%s_struct);\n", // per Claude
+        fprintf(outfile, "free(tmp_%s_struct);\n", name);
 
         fprintf(outfile, "\n");
 
@@ -878,7 +877,7 @@ static void emit_aggregate_free_function(FILE *outfile,
         emit_indent(outfile, indent + 1);
         fprintf(outfile,
                 "%s_free(instance->%s);\n",
-                fpre,
+                fpre2,
                 name);
         fprintf(outfile, "\n");
         free(fpre2);

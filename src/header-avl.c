@@ -89,8 +89,8 @@ void emit_aggregate_avl_typedefs(FILE *outfile, xmlNodePtr node, int indent)
 
   fprintf(outfile,
           "typedef int (*%s_action)(%s_node *n)",
-          avl_name,
-          avl_name);
+          avl_name ? avl_name : "UNKNOWN",
+          avl_name ? avl_name : "UNKNOWN");
 
 exit:
   if (name) free(name);

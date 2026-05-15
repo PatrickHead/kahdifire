@@ -81,6 +81,8 @@ int gen_code(char *file_name, char *base_name)
   xml_buf = malloc(len + 1);
   if (!xml_buf) goto exit;
 
+  memset(xml_buf, 0, len + 1);
+
   n_read = fread(xml_buf, 1, len, infile);
   if (n_read != len) goto exit;
 
@@ -463,12 +465,19 @@ void aggregates_free(aggregates *ags)
   
 void aggregates_add(aggregates *ags, char *name)
 {
+  char **tmp;
+
   if (!ags || !name) return;
 
-  ags->array = realloc(ags->array, sizeof(int) * (ags->n + 1));
+  tmp = realloc(ags->array, sizeof(char *) * (ags->n + 1));
+  if (!tmp) goto exit;
+
+  ags->array = tmp;
   ags->array[ags->n] = strdup(name);
 
   ++ags->n;
+
+exit:
 }
 
   /**
