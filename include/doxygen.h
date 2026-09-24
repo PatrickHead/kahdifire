@@ -28,7 +28,10 @@
 #define DOXYGEN_H
 
 #include "common.h"
+#include "options.h"
 
-void gen_doxygen_configuration(xmlDocPtr doc, char *base_name);
+void gen_doxygen_configuration(xmlDocPtr doc,
+                               const char *base_name,
+                               options *opts);
 
 #endif //DOXYGEN_H

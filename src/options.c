@@ -20,11 +20,11 @@
  *  @brief tracks code generation options
  */
 
+#include "config.h"
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-
-#include "config.h"
 
 #include "options.h"
 
@@ -41,7 +41,7 @@
 annotation_type option_annotation(void) { return annotation_get_type(); }
 
   /**
-   *  @fn void option_set_annotation(char *type)
+   *  @fn void option_set_annotation(const char *type)
    *  @brief  sets annotation type
    *
    *  @param  type - string representation of @a annotation_type
@@ -50,7 +50,7 @@ annotation_type option_annotation(void) { return annotation_get_type(); }
    *       Nothing.
    */
 
-void option_set_annotation(char *type)
+void option_set_annotation(const char *type)
 {
   annotation_set_type(annotation_string_to_type(type));
 }
@@ -68,7 +68,7 @@ void option_set_annotation(char *type)
 license_type option_license(void) { return license_get_type(); }
 
   /**
-   *  @fn void option_set_license(char *type)
+   *  @fn void option_set_license(const char *type)
    *  @brief  sets license type
    *
    *  @param  type - string representation of @a license_type
@@ -77,13 +77,13 @@ license_type option_license(void) { return license_get_type(); }
    *       Nothing.
    */
 
-void option_set_license(char *type)
+void option_set_license(const char *type)
 {
   license_set_type(license_string_to_type(type));
 }
 
   /**
-   *  @fn void option_set_generator_options(char *generators)
+   *  @fn void option_set_generator_options(const char *generators)
    *  @brief  turns on optional code generators
    *
    *  @param  generators - comma separated list of:
@@ -95,7 +95,7 @@ void option_set_license(char *type)
    *       Nothing.
    */
 
-void option_set_generator_options(char *generators)
+void option_set_generator_options(const char *generators)
 {
   char *opt = NULL;
 
@@ -105,7 +105,7 @@ void option_set_generator_options(char *generators)
 
   if (!generators) return;
 
-  for (opt = strtok(generators, ","); opt; opt = strtok(NULL, ","))
+  for (opt = strtok((char *)generators, ","); opt; opt = strtok(NULL, ","))
   {
     if (!strcasecmp(opt, "array")) option_gen_array_on();
     else if (!strcasecmp(opt, "list")) option_gen_list_on();
@@ -114,9 +114,9 @@ void option_set_generator_options(char *generators)
 }
 
 static bool _gen_makefile = false;
-static char *_makefile_cc = "gcc";
-static char *_makefile_copts = "-Wall -O3 -g0";
-static char *_makefile_install_dir = "/usr/local";
+static char _makefile_cc[256] = "gcc";
+static char _makefile_copts[256] = "-Wall -O3 -g0";
+static char _makefile_install_dir[256] = "/usr/local";
 
   /**
    *  @fn char *option_makefile_cc(void)
@@ -193,7 +193,7 @@ void option_gen_makefile_on(void) { _gen_makefile = true; }
 void option_gen_makefile_off(void) { _gen_makefile = false; }
 
   /**
-   *  @fn void option_set_makefile_options(char *options);
+   *  @fn void option_set_makefile_options(const char *options);
    *  @brief  tracks makefile generator options
    *
    *  @param  options - comma separated list of:
@@ -205,32 +205,41 @@ void option_gen_makefile_off(void) { _gen_makefile = false; }
    *       Nothing.
    */
 
-void option_set_makefile_options(char *options)
+void option_set_makefile_options(const char *options)
 {
   char *opt = NULL;
-
-  option_gen_array_off();
-  option_gen_list_off();
-  option_gen_avl_off();
+  char *val = NULL;
 
   if (!options) return;
 
-  for (opt = strtok(options, ","); opt; opt = strtok(NULL, ","))
+  for (opt = strtok((char *)options, ","); opt; opt = strtok(NULL, ","))
   {
     if (!strncasecmp(opt, "CC", 2))
     {
-      opt = strtok(NULL, "=");
-      _makefile_cc = strdup(opt);
+      val = strchr(opt, '=');
+      if (val)
+      {
+        ++val;
+        strncpy(_makefile_cc, val, 255);
+      }
     }
     else if (!strncasecmp(opt, "COPTS", 5))
     {
-      opt = strtok(NULL, "=");
-      _makefile_copts = strdup(opt);
+      val = strchr(opt, '=');
+      if (val)
+      {
+        ++val;
+        strncpy(_makefile_copts, val, 255);
+      }
     }
     else if (!strncasecmp(opt, "INSTALL_DIR", 11))
     {
-      opt = strtok(NULL, "=");
-      _makefile_install_dir = strdup(opt);
+      val = strchr(opt, '=');
+      if (val)
+      {
+        ++val;
+        strncpy(_makefile_install_dir, val, 255);
+      }
     }
   }
 }
@@ -440,7 +449,7 @@ unsigned _n_include_files = 0;
 unsigned _curr_include_file = 0;
 
   /**
-   *  @fn void option_set_includes(char *inc_list);
+   *  @fn void option_set_includes(const char *inc_list);
    *  @brief  sets list of include files to be emitted in header
    *
    *  @param inc_list - ':' separated list of include file names
@@ -449,7 +458,7 @@ unsigned _curr_include_file = 0;
    *       Nothing.
    */
 
-void option_set_includes(char *inc_list)
+void option_set_includes(const char *inc_list)
 {
   char *fn;
   char *fn_end;
@@ -469,7 +478,7 @@ void option_set_includes(char *inc_list)
 
   n_fns = 1;
 
-  fn = inc_list;
+  fn = (char *)inc_list;
   while (*fn)
   {
     if (*fn == ':') ++n_fns;
@@ -481,7 +490,7 @@ void option_set_includes(char *inc_list)
   _n_include_files = n_fns;
   memset(_include_files, 0, sizeof(char *) * (n_fns + 1));
 
-  for (fn = fn_end = inc_list, i = 0; i < n_fns; i++)
+  for (fn = fn_end = (char *)inc_list, i = 0; i < n_fns; i++)
   {
     while (*fn_end && (*fn_end != ':')) ++fn_end;
     _include_files[i] = strndup(fn, fn_end - fn);

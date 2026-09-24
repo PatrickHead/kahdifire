@@ -23,6 +23,6 @@
 #ifndef STRAPP_H
 #define STRAPP_H
 
-char *strapp(char *s1, char *s2);
+char *strapp(char *s1, const char *s2);
 
 #endif //STRAPP_H

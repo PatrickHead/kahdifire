@@ -19,7 +19,7 @@
  *         suitable for use by the US Federal Government
  */
 
-char *_usalgplv3 =   /**< LGPLv3 text with US government add on */
+const char *_usalgplv3 =   /**< LGPLv3 text with US government add on */
   "/*\n"
   " *  Copyright YEAR Government of the United States of America as represented by\n"
   " *  the Department of Navy.  No copyright is claimed in the United States of\n"

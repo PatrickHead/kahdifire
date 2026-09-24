@@ -24,21 +24,25 @@
  *  Output is C language source code
  */
 
-#include <string.h>
-
 #include "config.h"
+
+#include <string.h>
 
 #include "header-array.h"
 #include "options.h"
 
 static void emit_aggregate_array_annotation(FILE *outfile,
                                             xmlNodePtr node,
-                                            char *aggregate_name,
-                                            char *array_name,
+                                            options *opts,
+                                            const char *aggregate_name,
+                                            const char *array_name,
                                             int indent);
 
   /**
-   *  @fn bool emit_aggregate_array(FILE *outfile, xmlNodePtr node, int indent)
+   *  @fn bool emit_aggregate_array(FILE *outfile,
+   *                      xmlNodePtr node,
+   *                      options *opts,
+   *                      int indent)
    *
    *  @brief emits array struct for struct or union from @p node to @p outfile
    *
@@ -49,16 +53,19 @@ static void emit_aggregate_array_annotation(FILE *outfile,
    *  @return true if aggregate_array emitted, false otherwise
    */
   
-bool emit_aggregate_array(FILE *outfile, xmlNodePtr node, int indent)
+bool emit_aggregate_array(FILE *outfile,
+                          xmlNodePtr node,
+                          options *opts,
+                          int indent)
 {
   char *name = NULL;
   char *array_name = NULL;
   char *field = NULL;
-  int len;
+  size_t len;
   int is_doxygen = 0;
   bool did_it = false;
 
-  if (!option_gen_array()) goto exit;
+  if (!option_gen_array(opts)) goto exit;
 
   if (!outfile || !node) goto exit;
 
@@ -66,7 +73,7 @@ bool emit_aggregate_array(FILE *outfile, xmlNodePtr node, int indent)
       strcmp((char *)node->name, "union"))
     goto exit;
 
-  switch (option_annotation())
+  switch (option_annotation(opts))
   {
     case annotation_type_doxygen: is_doxygen = 1; break;
     default: is_doxygen = 0; break;
@@ -78,7 +85,12 @@ bool emit_aggregate_array(FILE *outfile, xmlNodePtr node, int indent)
   array_name = strapp(array_name, name);
   array_name = strapp(array_name, "_array");
 
-  emit_aggregate_array_annotation(outfile, node, name, array_name, indent + 1);
+  emit_aggregate_array_annotation(outfile,
+                                  node,
+                                  opts,
+                                  name,
+                                  array_name,
+                                  indent + 1);
 
   emit_indent(outfile, indent);
   fprintf(outfile, "struct %s\n", array_name);
@@ -94,16 +106,16 @@ bool emit_aggregate_array(FILE *outfile, xmlNodePtr node, int indent)
   emit_indent(outfile, indent);
   fprintf(outfile,
           "%-*.*s/*%s  number of items in array         */\n",
-          len,
-          len,
+          (int)len,
+          (int)len,
           "int n;",
           is_doxygen ? "*<" : "");
 
   emit_indent(outfile, indent);
   fprintf(outfile,
           "%-*.*s/*%s  index of current item in array   */\n",
-          len,
-          len,
+          (int)len,
+          (int)len,
           "int current;",
           is_doxygen ? "*<" : "");
 
@@ -113,8 +125,8 @@ bool emit_aggregate_array(FILE *outfile, xmlNodePtr node, int indent)
   emit_indent(outfile, indent);
   fprintf(outfile,
           "%-*.*s/*%s  array of items                  */\n",
-          len,
-          len,
+          (int)len,
+          (int)len,
           field,
           is_doxygen ? "*<" : "");
 
@@ -126,9 +138,9 @@ bool emit_aggregate_array(FILE *outfile, xmlNodePtr node, int indent)
   did_it = true;
 
 exit:
-  if (name) free(name);
-  if (array_name) free(array_name);
-  if (field) free(field);
+  free(name);
+  free(array_name);
+  free(field);
 
   return did_it;
 }
@@ -136,13 +148,15 @@ exit:
   /**
    *  @fn void emit_aggregate_array_function_prototypes(FILE *outfile,
    *                                                    xmlNodePtr node,
-   *                                                    char *project_name)
+   *                                                    options *opts,
+   *                                                    const char *project_name)
    *
    *  @brief emits utility array function prototypes for struct or union in
    *         @p node to @p outfile
    *
    *  @param outfile - open FILE * for writing
    *  @param node - xmlNodePtr containing struct or union element
+   *  @param opts - pointer to @a options struct
    *  @param project_name - string containing project name
    *
    *  @par Returns
@@ -151,14 +165,15 @@ exit:
   
 void emit_aggregate_array_function_prototypes(FILE *outfile,
                                               xmlNodePtr node,
-                                              char *project_name)
+                                              options *opts,
+                                              const char *project_name)
 {
   char *name = NULL;
   char *project = NULL;
   char *array_name = NULL;
   char *function_prefix = NULL;
 
-  if (!option_gen_array()) goto exit;
+  if (!option_gen_array(opts)) goto exit;
 
   if (!outfile || !node) goto exit;
 
@@ -261,23 +276,27 @@ void emit_aggregate_array_function_prototypes(FILE *outfile,
   fprintf(outfile, "\n");
 
 exit:
-  if (name) free(name);
-  if (project) free(project);
-  if (array_name) free(array_name);
-  if (function_prefix) free(function_prefix);
+  free(name);
+  free(project);
+  free(array_name);
+  free(function_prefix);
+
+  return;
 }
 
   /**
    *  @fn void emit_aggregate_array_annotation(FILE *outfile,
    *                                           xmlNodePtr node,
-   *                                           char *aggregate_name,
-   *                                           char *array_name,
+   *                                           options *opts,
+   *                                           const char *aggregate_name,
+   *                                           const char *array_name,
    *                                           int indent)
    *
    *  @brief emits annotation for a dynamic array of structs or unions
    *
    *  @param outfile - open FILE * for writing
    *  @param node - xmlNodePtr containing struct or union element
+   *  @param opts - pointer to @a options struct
    *  @param aggregate_name - string containing typedef name of base aggregate
    *  @param array_name - string containing typedef array
    *  @param indent - indent level for output
@@ -288,20 +307,21 @@ exit:
   
 static void emit_aggregate_array_annotation(FILE *outfile,
                                             xmlNodePtr node,
-                                            char *aggregate_name,
-                                            char *array_name,
+                                            options *opts,
+                                            const char *aggregate_name,
+                                            const char *array_name,
                                             int indent)
 {
   if (!outfile || !node || !aggregate_name || !array_name) goto exit;
   if (!node->name) goto exit;
 
-  if (!option_annotation()) goto exit;
+  if (!option_annotation(opts)) goto exit;
 
   if (strcmp((char *)node->name, "struct") &&
       strcmp((char *)node->name, "union"))
     goto exit;
 
-  switch (option_annotation())
+  switch (option_annotation(opts))
   {
     case annotation_type_doxygen:
       emit_indent(outfile, indent);
@@ -342,5 +362,6 @@ static void emit_aggregate_array_annotation(FILE *outfile,
   }
 
 exit:
+  return;
 }
 

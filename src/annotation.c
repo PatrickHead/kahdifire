@@ -20,9 +20,9 @@
  *  @brief module to track annotation setting during code generation
  */
 
-#include <string.h>
-
 #include "config.h"
+
+#include <string.h>
 
 #include "annotation.h"
 
@@ -55,7 +55,7 @@ annotation_type annotation_get_type(void) { return _type; }
 void annotation_set_type(annotation_type type) { _type = type; }
 
   /**
-   *  @fn annotation_type annotation_string_to_type(char *string)
+   *  @fn annotation_type annotation_string_to_type(const char *string)
    *
    *  @brief returns @a annotation_type from @p string value
    *
@@ -64,7 +64,7 @@ void annotation_set_type(annotation_type type) { _type = type; }
    *  @returns annotation_type
    */
   
-annotation_type annotation_string_to_type(char *string)
+annotation_type annotation_string_to_type(const char *string)
 {
   annotation_type type = annotation_type_none;
 

@@ -38,7 +38,7 @@ typedef enum
 annotation_type annotation_get_type(void);
 void annotation_set_type(annotation_type type);
 
-annotation_type annotation_string_to_type(char *string);
+annotation_type annotation_string_to_type(const char *string);
 char *annotation_type_to_string(annotation_type type);
 
 #endif //ANNOTATION_H

@@ -31,6 +31,6 @@
 
 void emit_aggregate_list_functions(FILE *outfile,
                                    xmlNodePtr node,
-                                   char *project_name);
+                                   const char *project_name);
 
 #endif //SOURCE_LIST_H

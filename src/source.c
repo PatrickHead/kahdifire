@@ -24,10 +24,10 @@
  *  Output is C language source code
  */
 
+#include "config.h"
+
 #include <string.h>
 #include <libgen.h>
-
-#include "config.h"
 
 #include "source.h"
 #include "source-array.h"
@@ -37,80 +37,83 @@
 
 static void emit_enum_functions(FILE *outfile,
                                 xmlNodePtr node,
-                                char *project_name);
+                                const char *project_name);
 static void emit_aggregate_functions(FILE *outfile,
+                                     aggregates *type_cache,
                                      xmlNodePtr node,
-                                     char *project_name);
+                                     const char *project_name);
 static void emit_aggregate_new_function(FILE *outfile,
                                         xmlNodePtr node,
-                                        char *project,
+                                        const char *project,
                                         int indent);
 static void emit_aggregate_dup_function(FILE *outfile,
+                                        aggregates *type_cache,
                                         xmlNodePtr node,
-                                        char *project,
+                                        const char *project,
                                         int indent);
 static void emit_aggregate_free_function(FILE *outfile,
+                                         aggregates *type_cache,
                                          xmlNodePtr node,
-                                         char *project,
+                                         const char *project,
                                          int indent);
 static void emit_aggregate_getters_and_setters(FILE *outfile,
                                                xmlNodePtr node,
-                                               char *project,
+                                               const char *project,
                                                int indent);
 static void emit_aggregate_getter_function(FILE *outfile,
                                            xmlNodePtr node,
-                                           char *project,
-                                           char *aggregate_name,
+                                           const char *project,
+                                           const char *aggregate_name,
                                            int indent);
 static void emit_aggregate_setter_function(FILE *outfile,
                                            xmlNodePtr node,
-                                           char *project,
-                                           char *aggregate_name,
+                                           const char *project,
+                                           const char *aggregate_name,
                                            int indent);
 
-static void emit_source_annotation(FILE *outfile, char *file_name);
+static void emit_source_annotation(FILE *outfile, const char *file_name);
 static void emit_enum_str_to_type_annotation(FILE *outfile,
                                              xmlNodePtr node,
-                                             char *aggregate_name,
-                                             char *function_prefix,
+                                             const char *aggregate_name,
+                                             const char *function_prefix,
                                              int indent);
 static void emit_enum_type_to_str_annotation(FILE *outfile,
                                              xmlNodePtr node,
-                                             char *aggregate_name,
-                                             char *function_prefix,
+                                             const char *aggregate_name,
+                                             const char *function_prefix,
                                              int indent);
 static void emit_aggregate_new_annotation(FILE *outfile,
                                           xmlNodePtr node,
-                                          char *aggregate_name,
-                                          char *function_prefix,
+                                          const char *aggregate_name,
+                                          const char *function_prefix,
                                           int indent);
 static void emit_aggregate_dup_annotation(FILE *outfile,
                                           xmlNodePtr node,
-                                          char *aggregate_name,
-                                          char *function_prefix,
+                                          const char *aggregate_name,
+                                          const char *function_prefix,
                                           int indent);
 static void emit_aggregate_free_annotation(FILE *outfile,
                                            xmlNodePtr node,
-                                           char *aggregate_name,
-                                           char *function_prefix,
+                                           const char *aggregate_name,
+                                           const char *function_prefix,
                                            int indent);
 static void emit_aggregate_getter_annotation(FILE *outfile,
-                                             char *field_type,
-                                             char *pointers,
-                                             char *function_name,
-                                             char *aggregate_name,
-                                             char *field_name,
+                                             const char *field_type,
+                                             const char *pointers,
+                                             const char *function_name,
+                                             const char *aggregate_name,
+                                             const char *field_name,
                                              int indent);
 static void emit_aggregate_setter_annotation(FILE *outfile,
-                                             char *field_type,
-                                             char *pointers,
-                                             char *function_name,
-                                             char *aggregate_name,
-                                             char *field_name,
+                                             const char *field_type,
+                                             const char *pointers,
+                                             const char *function_name,
+                                             const char *aggregate_name,
+                                             const char *field_name,
                                              int indent);
 
   /**
-   *  @fn void gen_source(xmlDocPtr doc, char *base_name)
+   *  @fn void gen_source(xmlDocPtr doc, const char *base_name)
    *
    *  @brief generates C source code from enum, struct and union declarations
    *
@@ -121,7 +124,7 @@ static void emit_aggregate_setter_annotation(FILE *outfile,
    *  Nothing.
    */
   
-void gen_source(xmlDocPtr doc, char *base_name)
+void gen_source(xmlDocPtr doc, const char *base_name)
 {
   xmlNodePtr root;
   xmlNodePtr node;
@@ -129,8 +132,12 @@ void gen_source(xmlDocPtr doc, char *base_name)
   char *outfile_name = NULL;
   char *project_name = NULL;
   char *tmp = NULL;
+  aggregates *type_cache = NULL;
 
   if (!doc || !base_name) return;
+
+  type_cache = build_type_cache(doc);
+  if (!type_cache) goto exit;
 
   node = xmlDocGetRootElement(doc);
   if (!node) goto exit;
@@ -213,7 +220,7 @@ void gen_source(xmlDocPtr doc, char *base_name)
     else if (!strcmp((char *)node->name, "struct") ||
              !strcmp((char *)node->name, "union"))
     {
-      emit_aggregate_functions(outfile, node, project_name);
+      emit_aggregate_functions(outfile, type_cache, node, project_name);
       emit_aggregate_array_functions(outfile, node, project_name);
       emit_aggregate_list_functions(outfile, node, project_name);
       emit_aggregate_avl_functions(outfile, node, project_name);
@@ -222,15 +229,18 @@ void gen_source(xmlDocPtr doc, char *base_name)
 
 exit:
   if (outfile) fclose(outfile);
-  if (outfile_name) free(outfile_name);
-  if (project_name) free(project_name);
-  if (tmp) free(tmp);
+  free(outfile_name);
+  free(project_name);
+  free(tmp);
+  if (type_cache) aggregates_free(type_cache);
+
+  return;
 }
 
   /**
    *  @fn void emit_enum_functions(FILE *outfile,
    *                               xmlNodePtr node,
-   *                               char *project_name)
+   *                               const char *project_name)
    *
    *  @brief generates C source code from enum element in @p node
    *
@@ -244,7 +254,7 @@ exit:
   
 static void emit_enum_functions(FILE *outfile,
                                 xmlNodePtr node,
-                                char *project_name)
+                                const char *project_name)
 {
   char *project = NULL;
   char *name = NULL;
@@ -309,7 +319,7 @@ static void emit_enum_functions(FILE *outfile,
               item_name);
     }
 
-    if (item_name) free(item_name);
+    free(item_name);
     item_name = NULL;
 
     first = 0;
@@ -357,7 +367,7 @@ static void emit_enum_functions(FILE *outfile,
               item_name);
     }
 
-    if (item_name) free(item_name);
+    free(item_name);
     item_name = NULL;
 
     first = 0;
@@ -380,19 +390,23 @@ static void emit_enum_functions(FILE *outfile,
   fprintf(outfile, "\n");
 
 exit:
-  if (project) free(project);
-  if (name) free(name);
-  if (fpre) free(fpre);
+  free(project);
+  free(name);
+  free(fpre);
+
+  return;
 }
 
   /**
    *  @fn void emit_aggregate_functions(FILE *outfile,
+                                        aggregates *type_cache,
    *                                    xmlNodePtr node,
-   *                                    char *project_name)
+   *                                    const char *project_name)
    *
    *  @brief generates C source code from struct or union element in @p node
    *
    *  @param outfile - open FILE * for writing
+   *  @param type_cache - pointer to @a aggregates struct, cache of known types
    *  @param node - xmlNodePtr containing struct or union element
    *  @param project_name - string containing project name
    *
@@ -401,14 +415,15 @@ exit:
    */
   
 static void emit_aggregate_functions(FILE *outfile,
+                                     aggregates *type_cache,
                                      xmlNodePtr node,
-                                     char *project_name)
+                                     const char *project_name)
 {
   char *project = NULL;
   char *name = NULL;
   int indent = 0;
 
-  if (!outfile || !node || !project_name) goto exit;
+  if (!outfile || !node || !project_name || !type_cache) goto exit;
   if (strcmp((char *)node->name, "struct") &&
       strcmp((char *)node->name, "union"))
     goto exit;
@@ -432,19 +447,21 @@ static void emit_aggregate_functions(FILE *outfile,
   fprintf(outfile, "\n");
 
   emit_aggregate_new_function(outfile, node, project, indent);
-  emit_aggregate_dup_function(outfile, node, project, indent);
-  emit_aggregate_free_function(outfile, node, project, indent);
+  emit_aggregate_dup_function(outfile, type_cache, node, project, indent);
+  emit_aggregate_free_function(outfile, type_cache, node, project, indent);
   emit_aggregate_getters_and_setters(outfile, node, project, indent);
 
 exit:
-  if (project) free(project);
-  if (name) free(name);
+  free(project);
+  free(name);
+
+  return;
 }
 
   /**
    *  @fn void emit_aggregate_new_function(FILE *outfile,
    *                                       xmlNodePtr node,
-   *                                       char *project,
+   *                                       const char *project,
    *                                       int indent)
    *
    *  @brief generates C source code to create a new struct or union from
@@ -461,7 +478,7 @@ exit:
   
 static void emit_aggregate_new_function(FILE *outfile,
                                         xmlNodePtr node,
-                                        char *project,
+                                        const char *project,
                                         int indent)
 {
   char *name = NULL;
@@ -510,20 +527,24 @@ static void emit_aggregate_new_function(FILE *outfile,
   fprintf(outfile, "\n");
 
 exit:
-  if (name) free(name);
-  if (fpre) free(fpre);
+  free(name);
+  free(fpre);
+
+  return;
 }
 
   /**
    *  @fn void emit_aggregate_dup_function(FILE *outfile,
    *                                       xmlNodePtr node,
-   *                                       char *project,
+   *                                       aggregates *type_cache,
+   *                                       const char *project,
    *                                       int indent)
    *
    *  @brief generates C source code to duplicate struct or union from
    *         element in @p node
    *
    *  @param outfile - open FILE * for writing
+   *  @param type_cache - pointer to @a aggregates struct, cache of known types
    *  @param node - xmlNodePtr containing struct or union element
    *  @param project - string containing project name
    *  @param indent - indent level for output
@@ -533,8 +554,9 @@ exit:
    */
   
 static void emit_aggregate_dup_function(FILE *outfile,
+                                        aggregates *type_cache,
                                         xmlNodePtr node,
-                                        char *project,
+                                        const char *project,
                                         int indent)
 {
   char *name = NULL;
@@ -551,7 +573,7 @@ static void emit_aggregate_dup_function(FILE *outfile,
   char *type = NULL;
   char *reference_name = NULL;
 
-  if (!outfile || !node || !project) goto exit;
+  if (!outfile || !node || !project || !type_cache) goto exit;
   if (strcmp((char *)node->name, "struct") &&
       strcmp((char *)node->name, "union"))
     goto exit;
@@ -569,6 +591,9 @@ static void emit_aggregate_dup_function(FILE *outfile,
           fpre,
           name);
   fprintf(outfile, "{\n");
+
+  free(fpre);
+  fpre = NULL;
 
   ++indent;
 
@@ -597,6 +622,9 @@ static void emit_aggregate_dup_function(FILE *outfile,
   fprintf(outfile, "memcpy(new_instance, instance, sizeof(%s));\n", name);
 
   fprintf(outfile, "\n");
+
+  free(name);
+  name = NULL;
 
     // Any pointer to non-scalar field must call that field's _dup function
 
@@ -717,6 +745,7 @@ static void emit_aggregate_dup_function(FILE *outfile,
                 name);
 
         emit_indent(outfile, indent);
+#warning the following needs to more sofisticated.  a 'dup' instead of memcpy
         fprintf(outfile,
                 "memcpy(&new_instance->%s, tmp_%s_struct, sizeof(%s));\n",
                 name,
@@ -724,8 +753,7 @@ static void emit_aggregate_dup_function(FILE *outfile,
                 type_name);
 
         emit_indent(outfile, indent);
-        //fprintf(outfile, "%s_free(tmp_%s_struct);\n", // per Claude
-        fprintf(outfile, "free(tmp_%s_struct);\n", name);
+        fprintf(outfile, "%s_free(tmp_%s_struct);\n", name, name);
 
         fprintf(outfile, "\n");
 
@@ -734,15 +762,15 @@ static void emit_aggregate_dup_function(FILE *outfile,
       else
         fprintf(outfile, "#warning Place code to copy '%s' here\n", name);
 
-      if (type_name) free(type_name);
-      if (type) free(type);
+      free(type_name);
+      free(type);
       type_name = type = NULL;
     }
 
     if (arrs) arrays_free(arrs);
     arrs = NULL;
 
-    if (name) free(name);
+    free(name);
     name = NULL;
   }
 
@@ -758,20 +786,21 @@ static void emit_aggregate_dup_function(FILE *outfile,
   fprintf(outfile, "\n");
 
 exit:
-  if (name) free(name);
-  if (fpre) free(fpre);
+  return;
 }
 
   /**
    *  @fn void emit_aggregate_free_function(FILE *outfile,
+   *                                        aggregates *type_cache,
    *                                        xmlNodePtr node,
-   *                                        char *project,
+   *                                        const char *project,
    *                                        int indent)
    *
    *  @brief generates C source code to free struct or union from
    *         element in @p node
    *
    *  @param outfile - open FILE * for writing
+   *  @param type_cache - pointer to @a aggregates struct, cache of known types
    *  @param node - xmlNodePtr containing struct or union element
    *  @param project - string containing project name
    *  @param indent - indent level for output
@@ -781,8 +810,9 @@ exit:
    */
   
 static void emit_aggregate_free_function(FILE *outfile,
+                                         aggregates *type_cache,
                                          xmlNodePtr node,
-                                         char *project,
+                                         const char *project,
                                          int indent)
 {
   char *name = NULL;
@@ -798,7 +828,7 @@ static void emit_aggregate_free_function(FILE *outfile,
   char *type_name = NULL;
   char *reference_name = NULL;
 
-  if (!outfile || !node || !project) goto exit;
+  if (!outfile || !node || !project || !type_cache) goto exit;
   if (strcmp((char *)node->name, "struct") &&
       strcmp((char *)node->name, "union"))
     goto exit;
@@ -918,7 +948,7 @@ static void emit_aggregate_free_function(FILE *outfile,
     if (arrs) arrays_free(arrs);
     arrs = NULL;
 
-    if (name) free(name);
+    free(name);
     name = NULL;
   }
 
@@ -936,14 +966,16 @@ static void emit_aggregate_free_function(FILE *outfile,
   fprintf(outfile, "\n");
 
 exit:
-  if (name) free(name);
-  if (fpre) free(fpre);
+  free(name);
+  free(fpre);
+
+  return;
 }
 
   /**
    *  @fn void emit_aggregate_getters_and_setters(FILE *outfile,
    *                                              xmlNodePtr node,
-   *                                              char *project,
+   *                                              const char *project,
    *                                              int indent)
    *
    *  @brief generates getter and setter C source code for struct or union
@@ -960,7 +992,7 @@ exit:
   
 static void emit_aggregate_getters_and_setters(FILE *outfile,
                                                xmlNodePtr node,
-                                               char *project,
+                                               const char *project,
                                                int indent)
 {
   xmlNodePtr child;
@@ -990,14 +1022,16 @@ static void emit_aggregate_getters_and_setters(FILE *outfile,
   }
 
 exit:
-  if (aggregate_name) free(aggregate_name);
+  free(aggregate_name);
+
+  return;
 }
 
   /**
    *  @fn void emit_aggregate_getter_function(FILE *outfile,
    *                                          xmlNodePtr node,
-   *                                          char *project,
-   *                                          char *aggregate_name,
+   *                                          const char *project,
+   *                                          const char *aggregate_name,
    *                                          int indent)
    *
    *  @brief generates getter C source code for struct or union from element
@@ -1015,8 +1049,8 @@ exit:
   
 static void emit_aggregate_getter_function(FILE *outfile,
                                            xmlNodePtr node,
-                                           char *project,
-                                           char *aggregate_name,
+                                           const char *project,
+                                           const char *aggregate_name,
                                            int indent)
 {
   char *field_name = NULL;
@@ -1161,17 +1195,19 @@ static void emit_aggregate_getter_function(FILE *outfile,
 
 exit:
   if (arrs) arrays_free(arrs);
-  if (field_name) free(field_name);
-  if (field_type) free(field_type);
-  if (fpre) free(fpre);
-  if (function_name) free(function_name);
+  free(field_name);
+  free(field_type);
+  free(fpre);
+  free(function_name);
+
+  return;
 }
 
   /**
    *  @fn void emit_aggregate_setter_function(FILE *outfile,
    *                                          xmlNodePtr node,
-   *                                          char *project,
-   *                                          char *aggregate_name,
+   *                                          const char *project,
+   *                                          const char *aggregate_name,
    *                                          int indent)
    *
    *  @brief generates setter C source code for struct or union from element
@@ -1189,8 +1225,8 @@ exit:
   
 static void emit_aggregate_setter_function(FILE *outfile,
                                            xmlNodePtr node,
-                                           char *project,
-                                           char *aggregate_name,
+                                           const char *project,
+                                           const char *aggregate_name,
                                            int indent)
 {
   char *field_name = NULL;
@@ -1321,15 +1357,10 @@ static void emit_aggregate_setter_function(FILE *outfile,
     if (n_pointers)
     {
       emit_indent(outfile, indent);
-      fprintf(outfile,
-              "if (instance->%s) free(instance->%s);\n",
-              field_name,
-              field_name);
+      fprintf(outfile, "free(instance->%s);\n", field_name);
 
       emit_indent(outfile, indent);
-      fprintf(outfile,
-              "instance->%s = NULL;\n",
-              field_name);
+      fprintf(outfile, "instance->%s = NULL;\n", field_name);
 
       emit_indent(outfile, indent);
       fprintf(outfile,
@@ -1357,14 +1388,16 @@ static void emit_aggregate_setter_function(FILE *outfile,
 
 exit:
   if (arrs) arrays_free(arrs);
-  if (field_name) free(field_name);
-  if (field_type) free(field_type);
-  if (fpre) free(fpre);
-  if (function_name) free(function_name);
+  free(field_name);
+  free(field_type);
+  free(fpre);
+  free(function_name);
+
+  return;
 }
 
   /**
-   *  @fn void emit_source_annotation(FILE *outfile, char *file_name)
+   *  @fn void emit_source_annotation(FILE *outfile, const char *file_name)
    *
    *  @brief emits global source annotation
    *
@@ -1375,7 +1408,7 @@ exit:
    *  Nothing.
    */
   
-static void emit_source_annotation(FILE *outfile, char *file_name)
+static void emit_source_annotation(FILE *outfile, const char *file_name)
 {
   if (!outfile || !file_name) goto exit;
 
@@ -1403,13 +1436,14 @@ static void emit_source_annotation(FILE *outfile, char *file_name)
   }
 
 exit:
+  return;
 }
 
   /**
    *  @fn void emit_enum_str_to_type_annotation(FILE *outfile,
    *                                            xmlNodePtr node,
-   *                                            char *enum_name,
-   *                                            char *function_prefix,
+   *                                            const char *enum_name,
+   *                                            const char *function_prefix,
    *                                            int indent)
    *
    *  @brief emits annotation for enum function
@@ -1426,8 +1460,8 @@ exit:
   
 static void emit_enum_str_to_type_annotation(FILE *outfile,
                                              xmlNodePtr node,
-                                             char *enum_name,
-                                             char *function_prefix,
+                                             const char *enum_name,
+                                             const char *function_prefix,
                                              int indent)
 {
   if (!outfile || !node || !enum_name || !function_prefix) goto exit;
@@ -1521,13 +1555,14 @@ static void emit_enum_str_to_type_annotation(FILE *outfile,
   }
 
 exit:
+  return;
 }
 
   /**
    *  @fn void emit_enum_type_to_str_annotation(FILE *outfile,
    *                                            xmlNodePtr node,
-   *                                            char *enum_name,
-   *                                            char *function_prefix,
+   *                                            const char *enum_name,
+   *                                            const char *function_prefix,
    *                                            int indent)
    *
    *  @brief emits annotation for enum function
@@ -1544,8 +1579,8 @@ exit:
   
 static void emit_enum_type_to_str_annotation(FILE *outfile,
                                              xmlNodePtr node,
-                                             char *enum_name,
-                                             char *function_prefix,
+                                             const char *enum_name,
+                                             const char *function_prefix,
                                              int indent)
 {
   if (!outfile || !node || !enum_name || !function_prefix) goto exit;
@@ -1635,13 +1670,14 @@ static void emit_enum_type_to_str_annotation(FILE *outfile,
   }
 
 exit:
+  return;
 }
 
   /**
    *  @fn void emit_aggregate_new_annotation(FILE *outfile,
    *                                         xmlNodePtr node,
-   *                                         char *aggregate_name,
-   *                                         char *function_prefix,
+   *                                         const char *aggregate_name,
+   *                                         const char *function_prefix,
    *                                         int indent)
    *
    *  @brief emits annotation for aggregate new function
@@ -1658,8 +1694,8 @@ exit:
   
 static void emit_aggregate_new_annotation(FILE *outfile,
                                           xmlNodePtr node,
-                                          char *aggregate_name,
-                                          char *function_prefix,
+                                          const char *aggregate_name,
+                                          const char *function_prefix,
                                           int indent)
 {
   if (!outfile || !node || !aggregate_name || !function_prefix) goto exit;
@@ -1763,13 +1799,14 @@ static void emit_aggregate_new_annotation(FILE *outfile,
   }
 
 exit:
+  return;
 }
 
   /**
    *  @fn void emit_aggregate_dup_annotation(FILE *outfile,
    *                                         xmlNodePtr node,
-   *                                         char *aggregate_name,
-   *                                         char *function_prefix,
+   *                                         const char *aggregate_name,
+   *                                         const char *function_prefix,
    *                                         int indent)
    *
    *  @brief emits annotation for aggregate dup function
@@ -1786,8 +1823,8 @@ exit:
   
 static void emit_aggregate_dup_annotation(FILE *outfile,
                                           xmlNodePtr node,
-                                          char *aggregate_name,
-                                          char *function_prefix,
+                                          const char *aggregate_name,
+                                          const char *function_prefix,
                                           int indent)
 {
   if (!outfile || !node || !aggregate_name || !function_prefix) goto exit;
@@ -1890,13 +1927,14 @@ static void emit_aggregate_dup_annotation(FILE *outfile,
   }
 
 exit:
+  return;
 }
 
   /**
    *  @fn void emit_aggregate_free_annotation(FILE *outfile,
    *                                          xmlNodePtr node,
-   *                                          char *aggregate_name,
-   *                                          char *function_prefix,
+   *                                          const char *aggregate_name,
+   *                                          const char *function_prefix,
    *                                          int indent)
    *
    *  @brief emits annotation for aggregate free function
@@ -1913,8 +1951,8 @@ exit:
   
 static void emit_aggregate_free_annotation(FILE *outfile,
                                            xmlNodePtr node,
-                                           char *aggregate_name,
-                                           char *function_prefix,
+                                           const char *aggregate_name,
+                                           const char *function_prefix,
                                            int indent)
 {
   if (!outfile || !node || !aggregate_name || !function_prefix) goto exit;
@@ -2012,15 +2050,16 @@ static void emit_aggregate_free_annotation(FILE *outfile,
   }
 
 exit:
+  return;
 }
 
   /**
    *  @fn void emit_aggregate_getter_annotation(FILE *outfile,
-   *                                            char *field_type,
-   *                                            char *pointers,
-   *                                            char *function_name,
-   *                                            char *aggregate_name,
-   *                                            char *field_name,
+   *                                            const char *field_type,
+   *                                            const char *pointers,
+   *                                            const char *function_name,
+   *                                            const char *aggregate_name,
+   *                                            const char *field_name,
    *                                            int indent)
    *
    *  @brief emits annotation for aggregate field getter function
@@ -2038,11 +2077,11 @@ exit:
    */
   
 static void emit_aggregate_getter_annotation(FILE *outfile,
-                                             char *field_type,
-                                             char *pointers,
-                                             char *function_name,
-                                             char *aggregate_name,
-                                             char *field_name,
+                                             const char *field_type,
+                                             const char *pointers,
+                                             const char *function_name,
+                                             const char *aggregate_name,
+                                             const char *field_name,
                                              int indent)
 {
   if (!outfile || !field_type || !pointers ||
@@ -2147,15 +2186,16 @@ static void emit_aggregate_getter_annotation(FILE *outfile,
   }
 
 exit:
+  return;
 }
 
   /**
    *  @fn void emit_aggregate_setter_annotation(FILE *outfile,
-   *                                            char *field_type,
-   *                                            char *pointers,
-   *                                            char *function_name,
-   *                                            char *aggregate_name,
-   *                                            char *field_name,
+   *                                            const char *field_type,
+   *                                            const char *pointers,
+   *                                            const char *function_name,
+   *                                            const char *aggregate_name,
+   *                                            const char *field_name,
    *                                            int indent)
    *
    *  @brief emits annotation for aggregate field setter function
@@ -2173,11 +2213,11 @@ exit:
    */
   
 static void emit_aggregate_setter_annotation(FILE *outfile,
-                                             char *field_type,
-                                             char *pointers,
-                                             char *function_name,
-                                             char *aggregate_name,
-                                             char *field_name,
+                                             const char *field_type,
+                                             const char *pointers,
+                                             const char *function_name,
+                                             const char *aggregate_name,
+                                             const char *field_name,
                                              int indent)
 {
   if (!outfile || !field_type || !pointers ||
@@ -2291,5 +2331,6 @@ static void emit_aggregate_setter_annotation(FILE *outfile,
   }
 
 exit:
+  return;
 }
 

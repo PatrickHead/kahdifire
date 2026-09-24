@@ -24,117 +24,117 @@
  *  Output is C language source code
  */
 
-#include <string.h>
-
 #include "config.h"
+
+#include <string.h>
 
 #include "source-array.h"
 #include "options.h"
 
 static void emit_aggregate_array_new_function(FILE *outfile,
                                               xmlNodePtr node,
-                                              char *project,
+                                              const char *project,
                                               int indent);
 static void emit_aggregate_array_dup_function(FILE *outfile,
                                               xmlNodePtr node,
-                                              char *project,
+                                              const char *project,
                                               int indent);
 static void emit_aggregate_array_free_function(FILE *outfile,
                                                xmlNodePtr node,
-                                               char *project,
+                                               const char *project,
                                                int indent);
 static void emit_aggregate_array_get_current_function(FILE *outfile,
                                                       xmlNodePtr node,
-                                                      char *project,
+                                                      const char *project,
                                                       int indent);
 static void emit_aggregate_array_add_function(FILE *outfile,
                                               xmlNodePtr node,
-                                              char *project,
+                                              const char *project,
                                               int indent);
 static void emit_aggregate_array_remove_function(FILE *outfile,
                                                  xmlNodePtr node,
-                                                 char *project,
+                                                 const char *project,
                                                  int indent);
 static void emit_aggregate_array_first_function(FILE *outfile,
                                                 xmlNodePtr node,
-                                                char *project,
+                                                const char *project,
                                                 int indent);
 static void emit_aggregate_array_next_function(FILE *outfile,
                                                xmlNodePtr node,
-                                               char *project,
+                                               const char *project,
                                                int indent);
 static void emit_aggregate_array_previous_function(FILE *outfile,
                                                    xmlNodePtr node,
-                                                   char *project,
+                                                   const char *project,
                                                    int indent);
 static void emit_aggregate_array_last_function(FILE *outfile,
                                                xmlNodePtr node,
-                                               char *project,
+                                               const char *project,
                                                int indent);
 static void emit_aggregate_array_current_function(FILE *outfile,
                                                   xmlNodePtr node,
-                                                  char *project,
+                                                  const char *project,
                                                   int indent);
 static void emit_aggregate_array_new_annotation(FILE *outfile,
                                                 xmlNodePtr node,
-                                                char *aggregate_name,
-                                                char *function_prefix,
+                                                const char *aggregate_name,
+                                                const char *function_prefix,
                                                 int indent);
 static void emit_aggregate_array_dup_annotation(FILE *outfile,
                                                 xmlNodePtr node,
-                                                char *aggregate_name,
-                                                char *function_prefix,
+                                                const char *aggregate_name,
+                                                const char *function_prefix,
                                                 int indent);
 static void emit_aggregate_array_free_annotation(FILE *outfile,
                                                  xmlNodePtr node,
-                                                 char *aggregate_name,
-                                                 char *function_prefix,
+                                                 const char *aggregate_name,
+                                                 const char *function_prefix,
                                                  int indent);
 static void emit_aggregate_array_get_current_annotation(FILE *outfile,
                                                         xmlNodePtr node,
-                                                        char *aggregate_name,
-                                                        char *function_prefix,
+                                                        const char *aggregate_name,
+                                                        const char *function_prefix,
                                                         int indent);
 static void emit_aggregate_array_add_annotation(FILE *outfile,
                                                 xmlNodePtr node,
-                                                char *aggregate_name,
-                                                char *function_prefix,
+                                                const char *aggregate_name,
+                                                const char *function_prefix,
                                                 int indent);
 static void emit_aggregate_array_remove_annotation(FILE *outfile,
                                                    xmlNodePtr node,
-                                                   char *aggregate_name,
-                                                   char *function_prefix,
+                                                   const char *aggregate_name,
+                                                   const char *function_prefix,
                                                    int indent);
 static void emit_aggregate_array_first_annotation(FILE *outfile,
                                                   xmlNodePtr node,
-                                                  char *aggregate_name,
-                                                  char *function_prefix,
+                                                  const char *aggregate_name,
+                                                  const char *function_prefix,
                                                   int indent);
 static void emit_aggregate_array_next_annotation(FILE *outfile,
                                                  xmlNodePtr node,
-                                                 char *aggregate_name,
-                                                 char *function_prefix,
+                                                 const char *aggregate_name,
+                                                 const char *function_prefix,
                                                  int indent);
 static void emit_aggregate_array_previous_annotation(FILE *outfile,
                                                      xmlNodePtr node,
-                                                     char *aggregate_name,
-                                                     char *function_prefix,
+                                                     const char *aggregate_name,
+                                                     const char *function_prefix,
                                                      int indent);
 static void emit_aggregate_array_last_annotation(FILE *outfile,
                                                  xmlNodePtr node,
-                                                 char *aggregate_name,
-                                                 char *function_prefix,
+                                                 const char *aggregate_name,
+                                                 const char *function_prefix,
                                                  int indent);
 static void emit_aggregate_array_current_annotation(FILE *outfile,
                                                     xmlNodePtr node,
-                                                    char *aggregate_name,
-                                                    char *function_prefix,
+                                                    const char *aggregate_name,
+                                                    const char *function_prefix,
                                                     int indent);
 
   /**
    *  @fn void emit_aggregate_array_functions(FILE *outfile,
    *                                          xmlNodePtr node,
-   *                                          char *project_name)
+   *                                          const char *project_name)
    *
    *  @brief generates list C source code from struct or union element in
    *         @p node
@@ -149,7 +149,7 @@ static void emit_aggregate_array_current_annotation(FILE *outfile,
   
 void emit_aggregate_array_functions(FILE *outfile,
                                     xmlNodePtr node,
-                                    char *project_name)
+                                    const char *project_name)
 {
   char *project = NULL;
   char *name = NULL;
@@ -196,14 +196,16 @@ void emit_aggregate_array_functions(FILE *outfile,
   emit_aggregate_array_current_function(outfile, node, project, indent);
 
 exit:
-  if (project) free(project);
-  if (name) free(name);
+  free(project);
+  free(name);
+
+  return;
 }
 
   /**
    *  @fn void emit_aggregate_array_new_function(FILE *outfile,
    *                                             xmlNodePtr node,
-   *                                             char *project,
+   *                                             const char *project,
    *                                             int indent)
    *
    *  @brief generates C source code to create new list struct from element
@@ -220,7 +222,7 @@ exit:
   
 static void emit_aggregate_array_new_function(FILE *outfile,
                                               xmlNodePtr node,
-                                              char *project,
+                                              const char *project,
                                               int indent)
 {
   char *name = NULL;
@@ -277,15 +279,17 @@ static void emit_aggregate_array_new_function(FILE *outfile,
   fprintf(outfile, "\n");
 
 exit:
-  if (name) free(name);
-  if (fpre) free(fpre);
-  if (fpre2) free(fpre2);
+  free(name);
+  free(fpre);
+  free(fpre2);
+
+  return;
 }
 
   /**
    *  @fn void emit_aggregate_array_dup_function(FILE *outfile,
    *                                             xmlNodePtr node,
-   *                                             char *project,
+   *                                             const char *project,
    *                                             int indent)
    *
    *  @brief generates C source code to duplicate list struct from
@@ -302,7 +306,7 @@ exit:
   
 static void emit_aggregate_array_dup_function(FILE *outfile,
                                               xmlNodePtr node,
-                                              char *project,
+                                              const char *project,
                                               int indent)
 {
   char *name = NULL;
@@ -379,16 +383,18 @@ static void emit_aggregate_array_dup_function(FILE *outfile,
   fprintf(outfile, "\n");
 
 exit:
-  if (name) free(name);
-  if (list_name) free(list_name);
-  if (fpre) free(fpre);
-  if (fpre2) free(fpre2);
+  free(name);
+  free(list_name);
+  free(fpre);
+  free(fpre2);
+
+  return;
 }
 
   /**
    *  @fn void emit_aggregate_array_free_function(FILE *outfile,
    *                                              xmlNodePtr node,
-   *                                              char *project,
+   *                                              const char *project,
    *                                              int indent)
    *
    *  @brief generates C source code to free list struct from element in @p node
@@ -404,7 +410,7 @@ exit:
   
 static void emit_aggregate_array_free_function(FILE *outfile,
                                                xmlNodePtr node,
-                                               char *project,
+                                               const char *project,
                                                int indent)
 {
   char *name = NULL;
@@ -479,16 +485,18 @@ static void emit_aggregate_array_free_function(FILE *outfile,
   fprintf(outfile, "\n");
 
 exit:
-  if (name) free(name);
-  if (list_name) free(list_name);
-  if (fpre) free(fpre);
-  if (fpre2) free(fpre2);
+  free(name);
+  free(list_name);
+  free(fpre);
+  free(fpre2);
+
+  return;
 }
 
   /**
    *  @fn void emit_aggregate_array_get_current_function(FILE *outfile,
    *                                                     xmlNodePtr node,
-   *                                                     char *project,
+   *                                                     const char *project,
    *                                                     int indent)
    *
    *  @brief generates C source code to get value of 'current' field in list
@@ -505,7 +513,7 @@ exit:
   
 static void emit_aggregate_array_get_current_function(FILE *outfile,
                                                       xmlNodePtr node,
-                                                      char *project,
+                                                      const char *project,
                                                       int indent)
 {
   char *name = NULL;
@@ -552,16 +560,18 @@ static void emit_aggregate_array_get_current_function(FILE *outfile,
   fprintf(outfile, "\n");
 
 exit:
-  if (name) free(name);
-  if (list_name) free(list_name);
-  if (fpre) free(fpre);
-  if (fpre2) free(fpre2);
+  free(name);
+  free(list_name);
+  free(fpre);
+  free(fpre2);
+
+  return;
 }
 
   /**
    *  @fn void emit_aggregate_array_add_function(FILE *outfile,
    *                                             xmlNodePtr node,
-   *                                             char *project,
+   *                                             const char *project,
    *                                             int indent)
    *
    *  @brief generates C source code to add a new item to list struct from
@@ -578,7 +588,7 @@ exit:
   
 static void emit_aggregate_array_add_function(FILE *outfile,
                                               xmlNodePtr node,
-                                              char *project,
+                                              const char *project,
                                               int indent)
 {
   char *name = NULL;
@@ -654,15 +664,17 @@ static void emit_aggregate_array_add_function(FILE *outfile,
   fprintf(outfile, "\n");
 
 exit:
-  if (name) free(name);
-  if (list_name) free(list_name);
-  if (fpre) free(fpre);
+  free(name);
+  free(list_name);
+  free(fpre);
+
+  return;
 }
 
   /**
    *  @fn void emit_aggregate_array_remove_function(FILE *outfile,
    *                                                xmlNodePtr node,
-   *                                                char *project,
+   *                                                const char *project,
    *                                                int indent)
    *
    *  @brief generates C source code to remove an item from list struct from
@@ -679,7 +691,7 @@ exit:
   
 static void emit_aggregate_array_remove_function(FILE *outfile,
                                                  xmlNodePtr node,
-                                                 char *project,
+                                                 const char *project,
                                                  int indent)
 {
   char *name = NULL;
@@ -773,17 +785,19 @@ static void emit_aggregate_array_remove_function(FILE *outfile,
   fprintf(outfile, "\n");
 
 exit:
-  if (name) free(name);
-  if (list_name) free(list_name);
-  if (fpre) free(fpre);
-  if (fpre2) free(fpre2);
+  free(name);
+  free(list_name);
+  free(fpre);
+  free(fpre2);
+
+  return;
 }
 
   /**
    *  @fn void emit_aggregate_array_first_function(FILE *outfile,
    *                                               xmlNodePtr node,
-   *                                               char *project,
-   *                                                int indent)
+   *                                               const char *project,
+   *                                               int indent)
    *
    *  @brief generates C source code to return the first item from list struct
    *         from element in @p node
@@ -799,7 +813,7 @@ exit:
   
 static void emit_aggregate_array_first_function(FILE *outfile,
                                                 xmlNodePtr node,
-                                                char *project,
+                                                const char *project,
                                                 int indent)
 {
   char *name = NULL;
@@ -867,16 +881,18 @@ static void emit_aggregate_array_first_function(FILE *outfile,
   fprintf(outfile, "\n");
 
 exit:
-  if (name) free(name);
-  if (list_name) free(list_name);
-  if (fpre) free(fpre);
-  if (fpre2) free(fpre2);
+  free(name);
+  free(list_name);
+  free(fpre);
+  free(fpre2);
+
+  return;
 }
 
   /**
    *  @fn void emit_aggregate_array_next_function(FILE *outfile,
    *                                              xmlNodePtr node,
-   *                                              char *project,
+   *                                              const char *project,
    *                                              int indent)
    *
    *  @brief generates C source code to return the next item from list struct
@@ -893,7 +909,7 @@ exit:
   
 static void emit_aggregate_array_next_function(FILE *outfile,
                                                xmlNodePtr node,
-                                               char *project,
+                                               const char *project,
                                                int indent)
 {
   char *name = NULL;
@@ -981,16 +997,18 @@ static void emit_aggregate_array_next_function(FILE *outfile,
   fprintf(outfile, "\n");
 
 exit:
-  if (name) free(name);
-  if (list_name) free(list_name);
-  if (fpre) free(fpre);
-  if (fpre2) free(fpre2);
+  free(name);
+  free(list_name);
+  free(fpre);
+  free(fpre2);
+
+  return;
 }
 
   /**
    *  @fn void emit_aggregate_array_previous_function(FILE *outfile,
    *                                                  xmlNodePtr node,
-   *                                                  char *project,
+   *                                                  const char *project,
    *                                                  int indent)
    *
    *  @brief generates C source code to return the previous item from list
@@ -1007,7 +1025,7 @@ exit:
   
 static void emit_aggregate_array_previous_function(FILE *outfile,
                                                    xmlNodePtr node,
-                                                   char *project,
+                                                   const char *project,
                                                    int indent)
 {
   char *name = NULL;
@@ -1099,16 +1117,18 @@ static void emit_aggregate_array_previous_function(FILE *outfile,
   fprintf(outfile, "\n");
 
 exit:
-  if (name) free(name);
-  if (list_name) free(list_name);
-  if (fpre) free(fpre);
-  if (fpre2) free(fpre2);
+  free(name);
+  free(list_name);
+  free(fpre);
+  free(fpre2);
+
+  return;
 }
 
   /**
    *  @fn void emit_aggregate_array_last_function(FILE *outfile,
    *                                              xmlNodePtr node,
-   *                                              char *project,
+   *                                              const char *project,
    *                                              int indent)
    *
    *  @brief generates C source code to return the last item from list struct
@@ -1125,7 +1145,7 @@ exit:
   
 static void emit_aggregate_array_last_function(FILE *outfile,
                                                xmlNodePtr node,
-                                               char *project,
+                                               const char *project,
                                                int indent)
 {
   char *name = NULL;
@@ -1193,16 +1213,18 @@ static void emit_aggregate_array_last_function(FILE *outfile,
   fprintf(outfile, "\n");
 
 exit:
-  if (name) free(name);
-  if (list_name) free(list_name);
-  if (fpre) free(fpre);
-  if (fpre2) free(fpre2);
+  free(name);
+  free(list_name);
+  free(fpre);
+  free(fpre2);
+
+  return;
 }
 
   /**
    *  @fn void emit_aggregate_array_current_function(FILE *outfile,
    *                                                 xmlNodePtr node,
-   *                                                 char *project,
+   *                                                 const char *project,
    *                                                 int indent)
    *
    *  @brief generates C source code to return the current item from array
@@ -1219,7 +1241,7 @@ exit:
   
 static void emit_aggregate_array_current_function(FILE *outfile,
                                                   xmlNodePtr node,
-                                                  char *project,
+                                                  const char *project,
                                                   int indent)
 {
   char *name = NULL;
@@ -1297,17 +1319,19 @@ static void emit_aggregate_array_current_function(FILE *outfile,
   fprintf(outfile, "\n");
 
 exit:
-  if (name) free(name);
-  if (list_name) free(list_name);
-  if (fpre) free(fpre);
-  if (fpre2) free(fpre2);
+  free(name);
+  free(list_name);
+  free(fpre);
+  free(fpre2);
+
+  return;
 }
 
   /**
    *  @fn void emit_aggregate_array_new_annotation(FILE *outfile,
    *                                               xmlNodePtr node,
-   *                                               char *aggregate_name,
-   *                                               char *function_prefix,
+   *                                               const char *aggregate_name,
+   *                                               const char *function_prefix,
    *                                               int indent)
    *
    *  @brief emits annotation for aggregate list new function
@@ -1324,8 +1348,8 @@ exit:
   
 static void emit_aggregate_array_new_annotation(FILE *outfile,
                                                 xmlNodePtr node,
-                                                char *aggregate_name,
-                                                char *function_prefix,
+                                                const char *aggregate_name,
+                                                const char *function_prefix,
                                                 int indent)
 {
   if (!outfile || !node || !aggregate_name || !function_prefix) goto exit;
@@ -1426,13 +1450,14 @@ static void emit_aggregate_array_new_annotation(FILE *outfile,
   }
 
 exit:
+  return;
 }
 
   /**
    *  @fn void emit_aggregate_array_dup_annotation(FILE *outfile,
    *                                               xmlNodePtr node,
-   *                                               char *aggregate_name,
-   *                                               char *function_prefix,
+   *                                               const char *aggregate_name,
+   *                                               const char *function_prefix,
    *                                               int indent)
    *
    *  @brief emits annotation for aggregate list dup function
@@ -1449,8 +1474,8 @@ exit:
   
 static void emit_aggregate_array_dup_annotation(FILE *outfile,
                                                 xmlNodePtr node,
-                                                char *aggregate_name,
-                                                char *function_prefix,
+                                                const char *aggregate_name,
+                                                const char *function_prefix,
                                                 int indent)
 {
   if (!outfile || !node || !aggregate_name || !function_prefix) goto exit;
@@ -1554,13 +1579,14 @@ static void emit_aggregate_array_dup_annotation(FILE *outfile,
   }
 
 exit:
+  return;
 }
 
   /**
    *  @fn void emit_aggregate_array_free_annotation(FILE *outfile,
    *                                                xmlNodePtr node,
-   *                                                char *aggregate_name,
-   *                                                char *function_prefix,
+   *                                                const char *aggregate_name,
+   *                                                const char *function_prefix,
    *                                                int indent)
    *
    *  @brief emits annotation for aggregate list free function
@@ -1577,8 +1603,8 @@ exit:
   
 static void emit_aggregate_array_free_annotation(FILE *outfile,
                                                  xmlNodePtr node,
-                                                 char *aggregate_name,
-                                                 char *function_prefix,
+                                                 const char *aggregate_name,
+                                                 const char *function_prefix,
                                                  int indent)
 {
   if (!outfile || !node || !aggregate_name || !function_prefix) goto exit;
@@ -1676,13 +1702,14 @@ static void emit_aggregate_array_free_annotation(FILE *outfile,
   }
 
 exit:
+  return;
 }
 
   /**
    *  @fn void emit_aggregate_array_get_current_annotation(FILE *outfile,
    *                                                     xmlNodePtr node,
-   *                                                     char *aggregate_name,
-   *                                                     char *function_prefix,
+   *                                                     const char *aggregate_name,
+   *                                                     const char *function_prefix,
    *                                                     int indent)
    *
    *  @brief emits annotation for aggregate list get_current function
@@ -1699,8 +1726,8 @@ exit:
   
 static void emit_aggregate_array_get_current_annotation(FILE *outfile,
                                                         xmlNodePtr node,
-                                                        char *aggregate_name,
-                                                        char *function_prefix,
+                                                        const char *aggregate_name,
+                                                        const char *function_prefix,
                                                         int indent)
 {
   if (!outfile || !node || !aggregate_name || !function_prefix) goto exit;
@@ -1799,13 +1826,14 @@ static void emit_aggregate_array_get_current_annotation(FILE *outfile,
   }
 
 exit:
+  return;
 }
 
   /**
    *  @fn void emit_aggregate_array_add_annotation(FILE *outfile,
    *                                               xmlNodePtr node,
-   *                                               char *aggregate_name,
-   *                                               char *function_prefix,
+   *                                               const char *aggregate_name,
+   *                                               const char *function_prefix,
    *                                               int indent)
    *
    *  @brief emits annotation for aggregate list add function
@@ -1822,8 +1850,8 @@ exit:
   
 static void emit_aggregate_array_add_annotation(FILE *outfile,
                                                 xmlNodePtr node,
-                                                char *aggregate_name,
-                                                char *function_prefix,
+                                                const char *aggregate_name,
+                                                const char *function_prefix,
                                                 int indent)
 {
   if (!outfile || !node || !aggregate_name || !function_prefix) goto exit;
@@ -1931,13 +1959,14 @@ static void emit_aggregate_array_add_annotation(FILE *outfile,
   }
 
 exit:
+  return;
 }
 
   /**
    *  @fn void emit_aggregate_array_remove_annotation(FILE *outfile,
    *                                                  xmlNodePtr node,
-   *                                                  char *aggregate_name,
-   *                                                  char *function_prefix,
+   *                                                  const char *aggregate_name,
+   *                                                  const char *function_prefix,
    *                                                  int indent)
    *
    *  @brief emits annotation for aggregate list remove function
@@ -1954,8 +1983,8 @@ exit:
   
 static void emit_aggregate_array_remove_annotation(FILE *outfile,
                                                    xmlNodePtr node,
-                                                   char *aggregate_name,
-                                                   char *function_prefix,
+                                                   const char *aggregate_name,
+                                                   const char *function_prefix,
                                                    int indent)
 {
   if (!outfile || !node || !aggregate_name || !function_prefix) goto exit;
@@ -2061,13 +2090,14 @@ static void emit_aggregate_array_remove_annotation(FILE *outfile,
   }
 
 exit:
+  return;
 }
 
   /**
    *  @fn void emit_aggregate_array_first_annotation(FILE *outfile,
    *                                                 xmlNodePtr node,
-   *                                                 char *aggregate_name,
-   *                                                 char *function_prefix,
+   *                                                 const char *aggregate_name,
+   *                                                 const char *function_prefix,
    *                                                 int indent)
    *
    *  @brief emits annotation for aggregate list first function
@@ -2084,8 +2114,8 @@ exit:
   
 static void emit_aggregate_array_first_annotation(FILE *outfile,
                                                   xmlNodePtr node,
-                                                  char *aggregate_name,
-                                                  char *function_prefix,
+                                                  const char *aggregate_name,
+                                                  const char *function_prefix,
                                                   int indent)
 {
   if (!outfile || !node || !aggregate_name || !function_prefix) goto exit;
@@ -2188,13 +2218,14 @@ static void emit_aggregate_array_first_annotation(FILE *outfile,
   }
 
 exit:
+  return;
 }
 
   /**
    *  @fn void emit_aggregate_array_next_annotation(FILE *outfile,
    *                                                xmlNodePtr node,
-   *                                                char *aggregate_name,
-   *                                                char *function_prefix,
+   *                                                const char *aggregate_name,
+   *                                                const char *function_prefix,
    *                                                int indent)
    *
    *  @brief emits annotation for aggregate list next function
@@ -2211,8 +2242,8 @@ exit:
   
 static void emit_aggregate_array_next_annotation(FILE *outfile,
                                                  xmlNodePtr node,
-                                                 char *aggregate_name,
-                                                 char *function_prefix,
+                                                 const char *aggregate_name,
+                                                 const char *function_prefix,
                                                  int indent)
 {
   if (!outfile || !node || !aggregate_name || !function_prefix) goto exit;
@@ -2315,13 +2346,14 @@ static void emit_aggregate_array_next_annotation(FILE *outfile,
   }
 
 exit:
+  return;
 }
 
   /**
    *  @fn void emit_aggregate_array_previous_annotation(FILE *outfile,
    *                                                    xmlNodePtr node,
-   *                                                    char *aggregate_name,
-   *                                                    char *function_prefix,
+   *                                                    const char *aggregate_name,
+   *                                                    const char *function_prefix,
    *                                                    int indent)
    *
    *  @brief emits annotation for aggregate list previous function
@@ -2338,8 +2370,8 @@ exit:
   
 static void emit_aggregate_array_previous_annotation(FILE *outfile,
                                                      xmlNodePtr node,
-                                                     char *aggregate_name,
-                                                     char *function_prefix,
+                                                     const char *aggregate_name,
+                                                     const char *function_prefix,
                                                      int indent)
 {
   if (!outfile || !node || !aggregate_name || !function_prefix) goto exit;
@@ -2442,13 +2474,14 @@ static void emit_aggregate_array_previous_annotation(FILE *outfile,
   }
 
 exit:
+  return;
 }
 
   /**
    *  @fn void emit_aggregate_array_last_annotation(FILE *outfile,
    *                                                xmlNodePtr node,
-   *                                                char *aggregate_name,
-   *                                                char *function_prefix,
+   *                                                const char *aggregate_name,
+   *                                                const char *function_prefix,
    *                                                int indent)
    *
    *  @brief emits annotation for aggregate list last function
@@ -2465,8 +2498,8 @@ exit:
   
 static void emit_aggregate_array_last_annotation(FILE *outfile,
                                                  xmlNodePtr node,
-                                                 char *aggregate_name,
-                                                 char *function_prefix,
+                                                 const char *aggregate_name,
+                                                 const char *function_prefix,
                                                  int indent)
 {
   if (!outfile || !node || !aggregate_name || !function_prefix) goto exit;
@@ -2569,13 +2602,14 @@ static void emit_aggregate_array_last_annotation(FILE *outfile,
   }
 
 exit:
+  return;
 }
 
   /**
    *  @fn void emit_aggregate_array_current_annotation(FILE *outfile,
    *                                                   xmlNodePtr node,
-   *                                                   char *aggregate_name,
-   *                                                   char *function_prefix,
+   *                                                   const char *aggregate_name,
+   *                                                   const char *function_prefix,
    *                                                   int indent)
    *
    *  @brief emits annotation for aggregate list current function
@@ -2592,8 +2626,8 @@ exit:
   
 static void emit_aggregate_array_current_annotation(FILE *outfile,
                                                     xmlNodePtr node,
-                                                    char *aggregate_name,
-                                                    char *function_prefix,
+                                                    const char *aggregate_name,
+                                                    const char *function_prefix,
                                                     int indent)
 {
   if (!outfile || !node || !aggregate_name || !function_prefix) goto exit;
@@ -2696,5 +2730,6 @@ static void emit_aggregate_array_current_annotation(FILE *outfile,
   }
 
 exit:
+  return;
 }
 

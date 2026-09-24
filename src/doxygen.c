@@ -24,6 +24,8 @@
  *  Output is doxygen
  */
 
+#include "config.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -34,17 +36,14 @@
 #include <ctype.h>
 #include <libgen.h>
 
-#include "config.h"
-
 #include "doxygen.h"
-#include "options.h"
 
   /*  Module specific function prototypes  */
 
-void emit_doxygen_configuration(FILE *outfile, char *project_name);
+static void emit_doxygen_configuration(FILE *outfile, const char *project_name);
 
 /**
- *  @fn void gen_doxygen_configuration(xmlDocPtr doc, char *base_name)
+ *  @fn void gen_doxygen_configuration(xmlDocPtr doc, const char *base_name)
  *
  *  @brief generates doxygen configuration file
  *
@@ -55,7 +54,9 @@ void emit_doxygen_configuration(FILE *outfile, char *project_name);
  *  Nothing.
  */
 
-void gen_doxygen_configuration(xmlDocPtr doc, char *base_name)
+void gen_doxygen_configuration(xmlDocPtr doc,
+                               const char *base_name,
+                               options *opts)
 {
   xmlNodePtr root;
   FILE *outfile = NULL;
@@ -66,7 +67,7 @@ void gen_doxygen_configuration(xmlDocPtr doc, char *base_name)
 
   if (!doc || !base_name) goto exit;
 
-  if (option_annotation() != annotation_type_doxygen) goto exit;
+  if (option_annotation(opts) != annotation_type_doxygen) goto exit;
 
   root = xmlDocGetRootElement(doc);
   if (!root) goto exit;
@@ -100,12 +101,14 @@ void gen_doxygen_configuration(xmlDocPtr doc, char *base_name)
 
 exit:
   if (outfile) fclose(outfile);
-  if (outfile_name) free(outfile_name);
-  if (project_name) free(project_name);
-  if (base_dir) free(base_dir);
+  free(outfile_name);
+  free(project_name);
+  free(base_dir);
+
+  return;
 }
 
-static char *_doxygen_config =  /**<  format string for doxygen configuration  */
+static const char *_doxygen_config =  /**<  format for doxygen configuration  */
   "DOXYFILE_ENCODING      = UTF-8\n"
   "PROJECT_NAME           = \"USER SUPPLIED NAME for project %s\"\n"
   "PROJECT_NUMBER         =\n"
@@ -438,7 +441,7 @@ static char *_doxygen_config =  /**<  format string for doxygen configuration  *
   "DOT_CLEANUP            = YES\n";
 
 /**
- *  @fn void emit_doxygen_configuration(FILE *outfile, char *project_name)
+ *  @fn void emit_doxygen_configuration(FILE *outfile, const char *project_name)
  *
  *  @brief outputs Doxygen configuration
  *
@@ -449,7 +452,7 @@ static char *_doxygen_config =  /**<  format string for doxygen configuration  *
  *  Nothing.
  */
 
-void emit_doxygen_configuration(FILE *outfile, char *project_name)
+static void emit_doxygen_configuration(FILE *outfile, const char *project_name)
 {
   fprintf(outfile,
           _doxygen_config,

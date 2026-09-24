@@ -28,49 +28,76 @@
 #include "license.h"
 #include "annotation.h"
 
-annotation_type option_annotation(void);
-void option_set_annotation(char *type);
+  /**
+   *  @typedef options
+   *  @brief creates a type for an @a options struct
+   */
 
-license_type option_license(void);
-void option_set_license(char *type);
+typedef struct options options;
 
-void option_set_generator_options(char *generators);
+  /**
+   *  @struct options
+   *  @brief defines a list of aggregate names
+   *
+   *  NOTE:  aggregate is one of a struct or union
+   */
 
-char *option_makefile_cc(void);
-char *option_makefile_copts(void);
-char *option_makefile_install_dir(void);
-bool option_gen_makefile(void);
-void option_gen_makefile_on(void);
-void option_gen_makefile_off(void);
-void option_set_makefile_options(char *generators);
+struct options
+{
+  bool gen_makefile;
+  char makefile_cc[256];
+  char makefile_copts[256];
+  char makefile_install_dir[256];
+  bool gen_array;
+  bool gen_list;
+  bool gen_avl;
+  bool gen_readme;
+  bool assume_typedefs;
+};
 
-bool option_gen_array(void);
-void option_gen_array_on(void);
-void option_gen_array_off(void);
+annotation_type option_annotation(options *opts);
+void option_set_annotation(options *opts, const char *type);
 
-bool option_gen_list(void);
-void option_gen_list_on(void);
-void option_gen_list_off(void);
+license_type option_license(options *opts);
+void option_set_license(options *opts, const char *type);
 
-bool option_gen_avl(void);
-void option_gen_avl_on(void);
-void option_gen_avl_off(void);
+void option_set_generator_options(options *opts, const char *generators);
 
-bool option_gen_readme(void);
-void option_gen_readme_on(void);
-void option_gen_readme_off(void);
+char *option_makefile_cc(options *opts);
+char *option_makefile_copts(options *opts);
+char *option_makefile_install_dir(options *opts);
+bool option_gen_makefile(options *opts);
+void option_gen_makefile_on(options *opts);
+void option_gen_makefile_off(options *opts);
+void option_set_makefile_options(options *opts, const char *generators);
 
-bool option_assume_typedefs(void);
-void option_assume_typedefs_on(void);
-void option_assume_typedefs_off(void);
+bool option_gen_array(options *opts);
+void option_gen_array_on(options *opts);
+void option_gen_array_off(options *opts);
 
-void option_set_includes(char *inc_list);
-char *option_get_first_include(void);
-char *option_get_next_include(void);
+bool option_gen_list(options *opts);
+void option_gen_list_on(options *opts);
+void option_gen_list_off(options *opts);
 
-bool option_cpp_compatible(void);
-void option_cpp_compatible_on(void);
-void option_cpp_compatible_off(void);
+bool option_gen_avl(options *opts);
+void option_gen_avl_on(options *opts);
+void option_gen_avl_off(options *opts);
+
+bool option_gen_readme(options *opts);
+void option_gen_readme_on(options *opts);
+void option_gen_readme_off(options *opts);
+
+bool option_assume_typedefs(options *opts);
+void option_assume_typedefs_on(options *opts);
+void option_assume_typedefs_off(options *opts);
+
+void option_set_includes(options *opts, const char *inc_list);
+char *option_get_first_include(options *opts);
+char *option_get_next_include(options *opts);
+
+bool option_cpp_compatible(options *opts);
+void option_cpp_compatible_on(options *opts);
+void option_cpp_compatible_off(options *opts);
 
 #endif //OPTIONS_H
 

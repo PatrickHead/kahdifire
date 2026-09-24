@@ -24,6 +24,8 @@
  *  Output is C language source code
  */
 
+#include "config.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -34,8 +36,6 @@
 #include <ctype.h>
 #include <libgen.h>
 
-#include "config.h"
-
 #include "header.h"
 #include "header-array.h"
 #include "header-list.h"
@@ -44,47 +44,47 @@
 
   /*  Module specific function prototypes  */
 
-static void emit_header_guard_start(FILE *outfile, char *project_name);
-static void emit_header_guard_end(FILE *outfile, char *project_name);
+static void emit_header_guard_start(FILE *outfile, const char *project_name);
+static void emit_header_guard_end(FILE *outfile, const char *project_name);
 static void emit_header_cpp_compat_start(FILE *outfile);
 static void emit_header_cpp_compat_end(FILE *outfile);
-static void emit_header_annotation(FILE *outfile, char *file_name);
+static void emit_header_annotation(FILE *outfile, const char *file_name);
 static void emit_header_includes(FILE *outfile);
 static void emit_typedef(FILE *outfile, xmlNodePtr node, int indent);
 static void emit_typedef_annotation(FILE *outfile,
                                     xmlNodePtr node,
-                                    char *name,
+                                    const char *name,
                                     int indent);
 static void emit_enum(FILE *outfile, xmlNodePtr node, int indent);
 static void emit_enum_annotation(FILE *outfile,
                                  xmlNodePtr node,
-                                 char *name,
+                                 const char *name,
                                  int indent);
 static void emit_enum_items(FILE *outfile, xmlNodePtr node, int indent);
 static bool emit_aggregate(FILE *outfile, xmlNodePtr node, int indent);
 static void emit_aggregate_annotation(FILE *outfile,
                                       xmlNodePtr node,
-                                      char *name,
+                                      const char *name,
                                       int indent);
 static void emit_fields(FILE *outfile, xmlNodePtr node, int indent);
 static void emit_type_reference(FILE *outfile, xmlNodePtr node, int indent);
 static void emit_function_prototypes(FILE *outfile,
                                      xmlNodePtr node,
-                                     char *project_name);
+                                     const char *project_name);
 static void emit_enum_function_prototypes(FILE *outfile,
                                           xmlNodePtr node,
-                                          char *project_name);
+                                          const char *project_name);
 static void emit_aggregate_function_prototypes(FILE *outfile,
                                                xmlNodePtr node,
-                                               char *project_name);
+                                               const char *project_name);
 static void emit_aggregate_field_function_prototypes(FILE *outfile,
                                                      xmlNodePtr node,
-                                                     char *project_name,
-                                                     char *aggregate_name,
-                                                     char *sub_field_name);
+                                                     const char *project_name,
+                                                     const char *aggregate_name,
+                                                     const char *sub_field_name);
 
   /**
-   *  @fn void gen_header(xmlDocPtr doc, char *base_name)
+   *  @fn void gen_header(xmlDocPtr doc, const char *base_name)
    *
    *  @brief generates C header from enum, struct and union declarations
    *
@@ -95,7 +95,7 @@ static void emit_aggregate_field_function_prototypes(FILE *outfile,
    *  Nothing.
    */
   
-void gen_header(xmlDocPtr doc, char *base_name)
+void gen_header(xmlDocPtr doc, const char *base_name)
 {
   xmlNodePtr root;
   xmlNodePtr node;
@@ -235,8 +235,10 @@ void gen_header(xmlDocPtr doc, char *base_name)
 
 exit:
   if (outfile) fclose(outfile);
-  if (outfile_name) free(outfile_name);
-  if (project_name) free(project_name);
+  free(outfile_name);
+  free(project_name);
+
+  return;
 }
 
   /**
@@ -279,13 +281,15 @@ static void emit_enum(FILE *outfile, xmlNodePtr node, int indent)
   fprintf(outfile, "} %s", name);
 
 exit:
-  if (name) free(name);
+  free(name);
+
+  return;
 }
 
   /**
    *  @fn void emit_enum_annotation(FILE *outfile,
    *                                xmlNodePtr node,
-   *                                char *name,
+   *                                const char *name,
    *                                int indent)
    *
    *  @brief emits annotation for an enum
@@ -301,7 +305,7 @@ exit:
   
 static void emit_enum_annotation(FILE *outfile,
                                  xmlNodePtr node,
-                                 char *name,
+                                 const char *name,
                                  int indent)
 {
   if (!outfile || !node || !name) goto exit;
@@ -350,6 +354,7 @@ static void emit_enum_annotation(FILE *outfile,
 
 
 exit:
+  return;
 }
 
   /**
@@ -406,14 +411,15 @@ static void emit_enum_items(FILE *outfile, xmlNodePtr node, int indent)
                 user_annotation ? user_annotation : "");
       }
 
-      if (name) free(name);
-      if (value) free(value);
+      free(name);
+      free(value);
     }
 
     node = node->next;
   }
 
 exit:
+  return;
 }
 
   /**
@@ -464,7 +470,7 @@ static bool emit_aggregate(FILE *outfile, xmlNodePtr node, int indent)
   did_it = true;
 
 exit:
-  if (name) free(name);
+  free(name);
 
   return did_it;
 }
@@ -472,7 +478,7 @@ exit:
   /**
    *  @fn void emit_aggregate_annotation(FILE *outfile,
    *                                     xmlNodePtr node,
-   *                                     char *name,
+   *                                     const char *name,
    *                                     int indent)
    *
    *  @brief emits annotation for a struct or union
@@ -488,7 +494,7 @@ exit:
   
 static void emit_aggregate_annotation(FILE *outfile,
                                       xmlNodePtr node,
-                                      char *name,
+                                      const char *name,
                                       int indent)
 {
   if (!outfile || !node || !name) goto exit;
@@ -535,6 +541,7 @@ static void emit_aggregate_annotation(FILE *outfile,
   }
 
 exit:
+  return;
 }
 
   /**
@@ -604,7 +611,7 @@ static void emit_fields(FILE *outfile, xmlNodePtr node, int indent)
         {
           type_name = strdup("uint32_t");
           bitlen = atoi(t = get_attribute(child, "size"));
-          if (t) free(t);
+          free(t);
         }
         else if (!strcmp((char *)child->name, "enum") ||
                  !strcmp((char *)child->name, "struct") ||
@@ -664,8 +671,8 @@ static void emit_fields(FILE *outfile, xmlNodePtr node, int indent)
       else
         fprintf(outfile, ";\n");
 
-      if (name) free(name);
-      if (type_name) free(type_name);
+      free(name);
+      free(type_name);
       name = type_name = NULL;
       if (arrs) arrays_free(arrs);
       arrs = NULL;
@@ -677,6 +684,7 @@ static void emit_fields(FILE *outfile, xmlNodePtr node, int indent)
   }
 
 exit:
+  return;
 }
 
   /**
@@ -776,14 +784,16 @@ static void emit_typedef(FILE *outfile, xmlNodePtr node, int indent)
   }
 
 exit:
-  if (name) free(name);
-  if (array_name) free(array_name);
+  free(name);
+  free(array_name);
+
+  return;
 }
 
   /**
    *  @fn void emit_typedef_annotation(FILE *outfile,
    *                                   xmlNodePtr node,
-   *                                   char *name,
+   *                                   const char *name,
    *                                   int indent)
    *
    *  @brief emits annotation for a typedef
@@ -799,7 +809,7 @@ exit:
   
 static void emit_typedef_annotation(FILE *outfile,
                                     xmlNodePtr node,
-                                    char *name,
+                                    const char *name,
                                     int indent)
 {
   if (!outfile || !node || !name) goto exit;
@@ -853,6 +863,7 @@ static void emit_typedef_annotation(FILE *outfile,
 
 
 exit:
+  return;
 }
 
   /**
@@ -902,12 +913,14 @@ static void emit_type_reference(FILE *outfile, xmlNodePtr node, int indent)
     fprintf(outfile, "%s %s", type, name);
 
 exit:
-  if (name) free(name);
-  if (type) free(type);
+  free(name);
+  free(type);
+
+  return;
 }
 
   /**
-   *  @fn void emit_header_guard_start(FILE *outfile, char *project_name)
+   *  @fn void emit_header_guard_start(FILE *outfile, const char *project_name)
    *
    *  @brief emits opening header guard macros to @p outfile
    *
@@ -918,7 +931,7 @@ exit:
    *  Nothing.
    */
   
-static void emit_header_guard_start(FILE *outfile, char *project_name)
+static void emit_header_guard_start(FILE *outfile, const char *project_name)
 {
   if (!outfile || !project_name) return;
 
@@ -928,7 +941,7 @@ static void emit_header_guard_start(FILE *outfile, char *project_name)
 }
 
   /**
-   *  @fn void emit_header_guard_end(FILE *outfile, char *project_name)
+   *  @fn void emit_header_guard_end(FILE *outfile, const char *project_name)
    *
    *  @brief emits closing header guard macros to @p outfile
    *
@@ -939,7 +952,7 @@ static void emit_header_guard_start(FILE *outfile, char *project_name)
    *  Nothing.
    */
   
-static void emit_header_guard_end(FILE *outfile, char *project_name)
+static void emit_header_guard_end(FILE *outfile, const char *project_name)
 {
   if (!outfile || !project_name) return;
 
@@ -995,7 +1008,7 @@ static void emit_header_cpp_compat_end(FILE *outfile)
 }
 
   /**
-   *  @fn void emit_header_annotation(FILE *outfile, char *file_name)
+   *  @fn void emit_header_annotation(FILE *outfile, const char *file_name)
    *
    *  @brief emits global header annotation
    *
@@ -1006,7 +1019,7 @@ static void emit_header_cpp_compat_end(FILE *outfile)
    *  Nothing.
    */
   
-static void emit_header_annotation(FILE *outfile, char *file_name)
+static void emit_header_annotation(FILE *outfile, const char *file_name)
 {
   if (!outfile || !file_name) goto exit;
 
@@ -1034,6 +1047,7 @@ static void emit_header_annotation(FILE *outfile, char *file_name)
   }
 
 exit:
+  return;
 }
 
   /**
@@ -1077,7 +1091,7 @@ static void emit_header_includes(FILE *outfile)
   /**
    *  @fn void emit_function_prototypes(FILE *outfile,
    *                                    xmlNodePtr node,
-   *                                    char *project_name)
+   *                                    const char *project_name)
    *
    *  @brief emits utility function prototypes for enum, struct or union in
    *         @p node to @p outfile
@@ -1092,7 +1106,7 @@ static void emit_header_includes(FILE *outfile)
   
 static void emit_function_prototypes(FILE *outfile,
                                      xmlNodePtr node,
-                                     char *project_name)
+                                     const char *project_name)
 {
   if (!outfile || !node) return;
 
@@ -1114,7 +1128,7 @@ static void emit_function_prototypes(FILE *outfile,
   /**
    *  @fn void emit_enum_function_prototypes(FILE *outfile,
    *                                         xmlNodePtr node,
-   *                                         char *project_name)
+   *                                         const char *project_name)
    *
    *  @brief emits utility function prototypes for enum in @p node to @p outfile
    *
@@ -1128,7 +1142,7 @@ static void emit_function_prototypes(FILE *outfile,
   
 static void emit_enum_function_prototypes(FILE *outfile,
                                           xmlNodePtr node,
-                                          char *project_name)
+                                          const char *project_name)
 {
   char *project = NULL;
   char *name = NULL;
@@ -1164,9 +1178,9 @@ static void emit_enum_function_prototypes(FILE *outfile,
   fprintf(outfile, "\n");
 
 exit:
-  if (project) free(project);
-  if (name) free(name);
-  if (fpre) free(fpre);
+  free(project);
+  free(name);
+  free(fpre);
 
   return;
 }
@@ -1174,7 +1188,7 @@ exit:
   /**
    *  @fn void emit_aggregate_function_prototypes(FILE *outfile,
    *                                              xmlNodePtr node,
-   *                                              char *project_name)
+   *                                              const char *project_name)
    *
    *  @brief emits utility function prototypes for struct or union in @p node
    *         to @p outfile
@@ -1189,7 +1203,7 @@ exit:
   
 static void emit_aggregate_function_prototypes(FILE *outfile,
                                                xmlNodePtr node,
-                                               char *project_name)
+                                               const char *project_name)
 {
   xmlNodePtr child;
   char *project = NULL;
@@ -1252,17 +1266,19 @@ static void emit_aggregate_function_prototypes(FILE *outfile,
   fprintf(outfile, "\n");
 
 exit:
-  if (project) free(project);
-  if (name) free(name);
-  if (function_prefix) free(function_prefix);
+  free(project);
+  free(name);
+  free(function_prefix);
+
+  return;
 }
 
   /**
    *  @fn void emit_aggregate_field_function_prototypes(FILE *outfile,
    *                                                    xmlNodePtr node,
-   *                                                    char *project_name,
-   *                                                    char *aggregate_name,
-   *                                                    char *sub_field_name)
+   *                                                    const char *project_name,
+   *                                                    const char *aggregate_name,
+   *                                                    const char *sub_field_name)
    *
    *  @brief emits utility function prototypes for a struct or union field in
    *         @p node to @p outfile
@@ -1282,9 +1298,9 @@ exit:
   
 static void emit_aggregate_field_function_prototypes(FILE *outfile,
                                                      xmlNodePtr node,
-                                                     char *project_name,
-                                                     char *aggregate_name,
-                                                     char *sub_field_name)
+                                                     const char *project_name,
+                                                     const char *aggregate_name,
+                                                     const char *sub_field_name)
 {
   xmlNodePtr child;
   xmlNodePtr child2;
@@ -1340,8 +1356,8 @@ static void emit_aggregate_field_function_prototypes(FILE *outfile,
       type_name = strapp(type_name, tmp1);
       type_name = strapp(type_name, " ");
       type_name = strapp(type_name, tmp2);
-      if (tmp1) free(tmp1);
-      if (tmp2) free(tmp2);
+      free(tmp1);
+      free(tmp2);
       ++n_pointers;
     }
     else if (!strcmp((char *)child->name, "struct") ||
@@ -1410,9 +1426,11 @@ static void emit_aggregate_field_function_prototypes(FILE *outfile,
                    field_name);
 
 exit:
-  if (type_name) free(type_name);
-  if (field_name) free(field_name);
-  if (function_prefix) free(function_prefix);
-  if (new_sub_field_name) free(new_sub_field_name);
+  free(type_name);
+  free(field_name);
+  free(function_prefix);
+  free(new_sub_field_name);
+
+  return;
 }
 

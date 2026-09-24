@@ -40,10 +40,10 @@ typedef enum
 license_type license_get_type(void);
 void license_set_type(license_type type);
 
-license_type license_string_to_type(char *string);
+license_type license_string_to_type(const char *string);
 char *license_type_to_string(license_type type);
 
-char *license_get_text(license_type type);
+const char *license_get_text(license_type type);
 
 void license_emit(FILE *outfile);
 

@@ -24,22 +24,22 @@
  *  Output is C language source code
  */
 
-#include <string.h>
-
 #include "config.h"
+
+#include <string.h>
 
 #include "header-list.h"
 #include "options.h"
 
 static void emit_aggregate_list_node_annotation(FILE *outfile,
                                                 xmlNodePtr node,
-                                                char *aggregate_name,
-                                                char *node_name,
+                                                const char *aggregate_name,
+                                                const char *node_name,
                                                 int indent);
 static void emit_aggregate_list_annotation(FILE *outfile,
                                            xmlNodePtr node,
-                                           char *aggregate_name,
-                                           char *list_name,
+                                           const char *aggregate_name,
+                                           const char *list_name,
                                            int indent);
 
   /**
@@ -59,7 +59,7 @@ bool emit_aggregate_list(FILE *outfile, xmlNodePtr node, int indent)
 {
   char *name = NULL;
   char *list_name = NULL;
-  int len;
+  size_t len;
   int is_doxygen = 0;
   bool did_it = false;
 
@@ -99,8 +99,8 @@ bool emit_aggregate_list(FILE *outfile, xmlNodePtr node, int indent)
   emit_indent(outfile, indent);
   fprintf(outfile,
           "%-*.*s/*%s  underlying llist  */\n",
-          len,
-          len,
+          (int)len,
+          (int)len,
           "llist *_llist;",
           is_doxygen ? "*<" : "");
 
@@ -112,8 +112,8 @@ bool emit_aggregate_list(FILE *outfile, xmlNodePtr node, int indent)
   did_it = true;
 
 exit:
-  if (name) free(name);
-  if (list_name) free(list_name);
+  free(name);
+  free(list_name);
 
   return did_it;
 }
@@ -138,7 +138,7 @@ bool emit_aggregate_list_node(FILE *outfile, xmlNodePtr node, int indent)
   char *name = NULL;
   char *node_name = NULL;
   char *field = NULL;
-  int len;
+  size_t len;
   int is_doxygen = 0;
   bool did_it = false;
 
@@ -186,8 +186,8 @@ bool emit_aggregate_list_node(FILE *outfile, xmlNodePtr node, int indent)
   emit_indent(outfile, indent);
   fprintf(outfile,
           "%-*.*s  /*%s  previous node  */\n",
-          len,
-          len,
+          (int)len,
+          (int)len,
           field,
           is_doxygen ? "*<" : "");
 
@@ -195,8 +195,8 @@ bool emit_aggregate_list_node(FILE *outfile, xmlNodePtr node, int indent)
   emit_indent(outfile, indent);
   fprintf(outfile,
           "%-*.*s  /*%s  next node      */\n",
-          len,
-          len,
+          (int)len,
+          (int)len,
           field,
           is_doxygen ? "*<" : "");
 
@@ -204,8 +204,8 @@ bool emit_aggregate_list_node(FILE *outfile, xmlNodePtr node, int indent)
   emit_indent(outfile, indent);
   fprintf(outfile,
           "%-*.*s  /*%s  %s data  */\n",
-          len,
-          len,
+          (int)len,
+          (int)len,
           field,
           is_doxygen ? "*<" : "",
           name);
@@ -218,8 +218,8 @@ bool emit_aggregate_list_node(FILE *outfile, xmlNodePtr node, int indent)
   did_it = true;
 
 exit:
-  if (name) free(name);
-  if (node_name) free(node_name);
+  free(name);
+  free(node_name);
 
   return did_it;
 }
@@ -227,7 +227,7 @@ exit:
   /**
    *  @fn void emit_aggregate_list_function_prototypes(FILE *outfile,
    *                                                   xmlNodePtr node,
-   *                                                   char *project_name)
+   *                                                   const char *project_name)
    *
    *  @brief emits utility list function prototypes for struct or union in
    *         @p node to @p outfile
@@ -242,7 +242,7 @@ exit:
   
 void emit_aggregate_list_function_prototypes(FILE *outfile,
                                              xmlNodePtr node,
-                                             char *project_name)
+                                             const char *project_name)
 {
   char *name = NULL;
   char *project = NULL;
@@ -378,17 +378,19 @@ void emit_aggregate_list_function_prototypes(FILE *outfile,
   fprintf(outfile, "\n");
 
 exit:
-  if (name) free(name);
-  if (project) free(project);
-  if (list_name) free(list_name);
-  if (function_prefix) free(function_prefix);
+  free(name);
+  free(project);
+  free(list_name);
+  free(function_prefix);
+
+  return;
 }
 
   /**
    *  @fn void emit_aggregate_list_node_annotation(FILE *outfile,
    *                                               xmlNodePtr node,
-   *                                               char *aggregate_name,
-   *                                               char *list_name,
+   *                                               const char *aggregate_name,
+   *                                               const char *list_name,
    *                                               int indent)
    *
    *  @brief emits annotation for a node of a list of structs or unions
@@ -405,8 +407,8 @@ exit:
   
 static void emit_aggregate_list_node_annotation(FILE *outfile,
                                                 xmlNodePtr node,
-                                                char *aggregate_name,
-                                                char *node_name,
+                                                const char *aggregate_name,
+                                                const char *node_name,
                                                 int indent)
 {
   if (!outfile || !node || !aggregate_name || !node_name) goto exit;
@@ -460,13 +462,14 @@ static void emit_aggregate_list_node_annotation(FILE *outfile,
   }
 
 exit:
+  return;
 }
 
   /**
    *  @fn void emit_aggregate_list_annotation(FILE *outfile,
    *                                          xmlNodePtr node,
-   *                                          char *aggregate_name,
-   *                                          char *list_name,
+   *                                          const char *aggregate_name,
+   *                                          const char *list_name,
    *                                          int indent)
    *
    *  @brief emits annotation for a list of structs or unions
@@ -483,8 +486,8 @@ exit:
   
 static void emit_aggregate_list_annotation(FILE *outfile,
                                            xmlNodePtr node,
-                                           char *aggregate_name,
-                                           char *list_name,
+                                           const char *aggregate_name,
+                                           const char *list_name,
                                            int indent)
 {
   if (!outfile || !node || !aggregate_name || !list_name) goto exit;
@@ -538,5 +541,6 @@ static void emit_aggregate_list_annotation(FILE *outfile,
   }
 
 exit:
+  return;
 }
 

@@ -29,6 +29,6 @@
 
 #include "common.h"
 
-void gen_readme(xmlDocPtr doc, char *base_name);
+void gen_readme(xmlDocPtr doc, const char *base_name);
 
 #endif //README_H

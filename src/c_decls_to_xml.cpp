@@ -32,6 +32,7 @@
 #include <print-tree.h>
 #include <c-family/c-common.h>
 #include <plugin-version.h>
+#include <error.h>
 
 #include "c_decls_to_xml.h"
 
@@ -106,7 +107,6 @@ static void add_user_type_reference(char **xml_str,
                                     const char *name,
                                     int indent_level);
 static char *strapp(char *s1, char *s2);
-
 
   /*
    *  Globals
@@ -282,7 +282,11 @@ static void add_array(char **xml_str, tree field_type, int indent_level)
             "%s:%d Flexible Arrays are NOT Allowed.  Use pointers.\n",
             LOCATION_FILE(input_location),
             LOCATION_LINE(input_location));
-    exit(EXIT_FAILURE);
+    error(EXIT_FAILURE,
+          0,
+          "%s:%d Flexible Arrays are NOT Allowed.  Use pointers.\n",
+          LOCATION_FILE(input_location),
+          LOCATION_LINE(input_location));
   }
 
   add_indent(xml_str, indent_level);

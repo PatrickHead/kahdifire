@@ -20,6 +20,8 @@
  *  @brief Routines common to all kahdifire modules
  */
 
+#include "config.h"
+
 #include <stdio.h>
 #include <string.h>
 #include <sys/types.h>
@@ -28,40 +30,33 @@
 #include <ctype.h>
 #include <libgen.h>
 
-#include "config.h"
-
 #include "header.h"
 #include "source.h"
 #include "makefile.h"
 #include "readme.h"
 #include "doxygen.h"
 
-  /*  Prototypes for functions in this module  */
-
-static aggregates *build_type_cache(xmlDocPtr doc);
-
-  /*  global variables available to other modules  */
-
-aggregates *type_cache = NULL;  /**<  global, list of found aggregate names  */
-
   /*  static module variables  */
 
 static int _indent = 2;         /**<  module, number of spaces per indent    */
 
   /**
-   *  @fn int gen_code(char *file_name, char *base_name)
+   *  @fn int gen_code(const char *file_name,
+   *                   const char *base_name,
+   *                   options *opts)
    *
    *  @brief generates C header and source code from enum, struct and union
    *         declarations
    *
    *  @param file_name - string containing file containing declarations
    *  @param base_name - basic name of project for output files
+   *  @param opts - pointer to @a options struct
    *
    *  @return 0 on success
    *         -1 on failure
    */
   
-int gen_code(char *file_name, char *base_name)
+int gen_code(const char *file_name, const char *base_name, options *opts)
 {
   FILE *infile = NULL;
   size_t len = 0L;
@@ -75,7 +70,7 @@ int gen_code(char *file_name, char *base_name)
   len = get_file_size(file_name);
   if (!len) goto exit;
 
-  infile = fopen(file_name, "r");
+  infile = fopen(file_name, "rb");
   if (!infile) goto exit;
 
   xml_buf = malloc(len + 1);
@@ -89,27 +84,24 @@ int gen_code(char *file_name, char *base_name)
   doc = parse_xml(xml_buf);
   if (!doc) goto exit;
 
-  type_cache = build_type_cache(doc);
-
   gen_header(doc, base_name);
   gen_source(doc, base_name);
   gen_makefile(doc, base_name);
   gen_readme(doc, base_name);
-  gen_doxygen_configuration(doc, base_name);
+  gen_doxygen_configuration(doc, base_name, opts);
 
   retval = 0;
 
 exit:
   if (doc) xmlFreeDoc(doc);
-  if (xml_buf) free(xml_buf);
+  free(xml_buf);
   if (infile) fclose(infile);
-  if (type_cache) aggregates_free(type_cache);
 
   return retval;
 }
 
   /**
-   *  @fn size_t get_file_size(char *file_name)
+   *  @fn size_t get_file_size(const char *file_name)
    *
    *  @brief returns size of @p file_name in bytes
    *
@@ -119,7 +111,7 @@ exit:
    *         0 if empty or on failure
    */
   
-size_t get_file_size(char *file_name)
+size_t get_file_size(const char *file_name)
 {
   struct stat st;
 
@@ -131,7 +123,7 @@ size_t get_file_size(char *file_name)
 }
 
   /**
-   *  @fn xmlDocPtr parse_xml(char *buf)
+   *  @fn xmlDocPtr parse_xml(const char *buf)
    *
    *  @brief parses @p buf into XML document
    *
@@ -141,10 +133,10 @@ size_t get_file_size(char *file_name)
    *          NULL on failure
    */
   
-xmlDocPtr parse_xml(char *buf)
+xmlDocPtr parse_xml(const char *buf)
 {
   xmlDocPtr doc = NULL;
-  int len = 0;
+  size_t len = 0;
 
   if (!buf) goto exit;
 
@@ -158,7 +150,7 @@ exit:
 }
 
   /**
-   *  @fn char *get_attribute(xmlNodePtr node, char *attr_name)
+   *  @fn char *get_attribute(xmlNodePtr node, const char *attr_name)
    *
    *  @brief gets value of @p attr_name from @p node
    *
@@ -169,7 +161,7 @@ exit:
    *          NULL on failure
    */
   
-char *get_attribute(xmlNodePtr node, char *attr_name)
+char *get_attribute(xmlNodePtr node, const char *attr_name)
 {
   char *value = NULL;
   xmlAttr *attribute;
@@ -190,7 +182,7 @@ exit:
 }
 
   /**
-   *  @fn char *create_base_name(char *file_name)
+   *  @fn char *create_base_name(const char *file_name)
    *
    *  @brief creates a string from file_name with any extension removed 
    *
@@ -202,7 +194,7 @@ exit:
    *          NULL on failure
    */
   
-char *create_base_name(char *file_name)
+char *create_base_name(const char *file_name)
 {
   char *base_name = NULL;
   char *dir_name = NULL;
@@ -232,8 +224,8 @@ char *create_base_name(char *file_name)
   sprintf(path, "%s/%s", dir_name, base_name);
 
 exit:
-  if (dir_name) free(dir_name);
-  if (base_name) free(base_name);
+  free(dir_name);
+  free(base_name);
 
   return path;
 }
@@ -274,7 +266,7 @@ arrays *arrays_new(void)
 void arrays_free(arrays *as)
 {
   if (!as) return;
-  if (as->array) free(as->array);
+  free(as->array);
   free(as);
 }
 
@@ -292,16 +284,24 @@ void arrays_free(arrays *as)
   
 void arrays_add(arrays *as, int n_elements)
 {
+  int *tmp = NULL;
+
   if (!as) return;
 
-  as->array = realloc(as->array, sizeof(int) * (as->n + 1));
+  tmp = realloc(as->array, sizeof(int) * (as->n + 1));
+  if (tmp) goto exit;
+  as->array = tmp;
+
   as->array[as->n] = n_elements;
 
   ++as->n;
+
+exit:
+  return;
 }
 
   /**
-   *  @fn char *get_project_name(char *base_name)
+   *  @fn char *get_project_name(const char *base_name)
    *
    *  @brief returns project name from @p base_name
    *
@@ -311,7 +311,7 @@ void arrays_add(arrays *as, int n_elements)
    *          NULL on failure
    */
   
-char *get_project_name(char *base_name)
+char *get_project_name(const char *base_name)
 {
   char *project_name = NULL;
   char *temp = NULL;
@@ -323,7 +323,7 @@ char *get_project_name(char *base_name)
   project_name = strdup(basename(temp));
 
 exit:
-  if (temp) free(temp);
+  free(temp);
 
   return project_name;
 }
@@ -400,7 +400,7 @@ void emit_indent(FILE *outfile, int indent)
 
   if (!outfile) return;
 
-  for (i = 0; i < (indent * _indent) && (i < 256); ++i)
+  for (i = 0; i < (indent * _indent); ++i)
     fputc(' ', outfile);
 }
 
@@ -452,7 +452,7 @@ void aggregates_free(aggregates *ags)
 }
 
   /**
-   *  @fn void aggregates_add(aggregates *ags, char *name)
+   *  @fn void aggregates_add(aggregates *ags, const char *name)
    *
    *  @brief adds a new aggregate name in @p name to @p ags
    *
@@ -463,7 +463,7 @@ void aggregates_free(aggregates *ags)
    *  Nothing.
    */
   
-void aggregates_add(aggregates *ags, char *name)
+void aggregates_add(aggregates *ags, const char *name)
 {
   char **tmp;
 
@@ -471,17 +471,23 @@ void aggregates_add(aggregates *ags, char *name)
 
   tmp = realloc(ags->array, sizeof(char *) * (ags->n + 1));
   if (!tmp) goto exit;
-
   ags->array = tmp;
-  ags->array[ags->n] = strdup(name);
 
-  ++ags->n;
+  ags->array[ags->n] = strdup(name);
+  if (!ags->array[ags->n])
+  {
+    tmp = realloc(ags->array, sizeof(char *) * ags->n);
+    if (!tmp) goto exit;
+    ags->array = tmp;
+  }
+  else ++ags->n;
 
 exit:
+  return;
 }
 
   /**
-   *  @fn int aggregates_find(aggregates *ags, char *name)
+   *  @fn int aggregates_find(aggregates *ags, const char *name)
    *
    *  @brief finds @p name in @p ags
    *
@@ -492,7 +498,7 @@ exit:
    *          0 on failure
    */
   
-int aggregates_find(aggregates *ags, char *name)
+int aggregates_find(aggregates *ags, const char *name)
 {
   int found = 0;
   int i;
@@ -513,7 +519,7 @@ exit:
 }
 
   /**
-   *  @fn static aggregates *build_type_cache(xmlDocPtr doc)
+   *  @fn aggregates *build_type_cache(xmlDocPtr doc)
    *
    *  @brief creates a new @a aggregates list from @p doc
    *
@@ -523,7 +529,7 @@ exit:
    *          NULL on failure
    */
   
-static aggregates *build_type_cache(xmlDocPtr doc)
+aggregates *build_type_cache(xmlDocPtr doc)
 {
   aggregates *ags = NULL;
   xmlNodePtr root = NULL;
@@ -739,6 +745,7 @@ void array_level(arrays *arrs, xmlNodePtr node)
   }
 
 exit:
+  return;
 }
 
   /**
@@ -917,7 +924,7 @@ exit:
 }
 
   /**
-   *  @fn char *function_prefix(char *project, char *declaration)
+   *  @fn char *function_prefix(const char *project, const char *declaration)
    *
    *  @brief creates a function prefix based on @p project and @p declaration
    *
@@ -933,7 +940,7 @@ exit:
    *  @return string containing proper function prefix
    */
   
-char *function_prefix(char *project, char *declaration)
+char *function_prefix(const char *project, const char *declaration)
 {
   char *prefix = NULL;
 

@@ -24,6 +24,8 @@
  *  Output is makefile
  */
 
+#include "config.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -34,8 +36,6 @@
 #include <ctype.h>
 #include <libgen.h>
 
-#include "config.h"
-
 #include "makefile.h"
 #include "options.h"
 
@@ -44,16 +44,16 @@
 static void emit_blank(FILE *outfile);
 static void emit_options(FILE *outfile);
 static void emit_install_dir(FILE *outfile);
-static void emit_all(FILE *outfile, char *project_name);
-static void emit_doxygen(FILE *outfile, char *project_name);
-static void emit_library(FILE *outfile, char *project_name);
-static void emit_object(FILE *outfile, char *project_name);
-static void emit_clean(FILE *outfile, char *project_name);
-static void emit_install(FILE *outfile, char *project_name);
-static void emit_uninstall(FILE *outfile, char *project_name);
+static void emit_all(FILE *outfile, const char *project_name);
+static void emit_doxygen(FILE *outfile, const char *project_name);
+static void emit_library(FILE *outfile, const char *project_name);
+static void emit_object(FILE *outfile, const char *project_name);
+static void emit_clean(FILE *outfile, const char *project_name);
+static void emit_install(FILE *outfile, const char *project_name);
+static void emit_uninstall(FILE *outfile, const char *project_name);
 
 /**
- *  @fn void gen_makefile(xmlDocPtr doc, char *base_name)
+ *  @fn void gen_makefile(xmlDocPtr doc, const char *base_name)
  *
  *  @brief generates makefile from enum, struct and union declarations
  *
@@ -64,11 +64,11 @@ static void emit_uninstall(FILE *outfile, char *project_name);
  *  Nothing.
  */
 
-void gen_makefile(xmlDocPtr doc, char *base_name)
+void gen_makefile(xmlDocPtr doc, const char *base_name)
 {
   xmlNodePtr root;
   FILE *outfile = NULL;
-  char *tmp;
+  char *tmp = NULL;
   char *base_dir = NULL;
   char *outfile_name = NULL;
   char *project_name = NULL;
@@ -118,9 +118,11 @@ void gen_makefile(xmlDocPtr doc, char *base_name)
 
 exit:
   if (outfile) fclose(outfile);
-  if (outfile_name) free(outfile_name);
-  if (project_name) free(project_name);
-  if (base_dir) free(base_dir);
+  free(outfile_name);
+  free(project_name);
+  free(tmp);
+
+  return;
 }
 
 /**
@@ -174,7 +176,7 @@ void emit_install_dir(FILE *outfile)
 }
 
 /**
- *  @fn void emit_all(FILE *outfile, char *project_name);
+ *  @fn void emit_all(FILE *outfile, const char *project_name);
  *
  *  @brief adds default (all:) target rule
  *
@@ -185,13 +187,13 @@ void emit_install_dir(FILE *outfile)
  *  Nothing.
  */
 
-void emit_all(FILE *outfile, char *project_name)
+void emit_all(FILE *outfile, const char *project_name)
 {
   fprintf(outfile, "all: lib%s.a\n", project_name);
 }
 
 /**
- *  @fn void emit_doxygen(FILE *outfile, char *project_name)
+ *  @fn void emit_doxygen(FILE *outfile, const char *project_name)
  *
  *  @brief adds target rule to create Doxygen documentation
  *
@@ -202,7 +204,7 @@ void emit_all(FILE *outfile, char *project_name)
  *  Nothing.
  */
 
-void emit_doxygen(FILE *outfile, char *project_name)
+void emit_doxygen(FILE *outfile, const char *project_name)
 {
   if (option_annotation() != annotation_type_doxygen) return;
 
@@ -214,7 +216,7 @@ void emit_doxygen(FILE *outfile, char *project_name)
 }
 
 /**
- *  @fn void emit_library(FILE *outfile, char *project_name)
+ *  @fn void emit_library(FILE *outfile, const char *project_name)
  *
  *  @brief adds target rule to create a static (.a) library
  *
@@ -225,7 +227,7 @@ void emit_doxygen(FILE *outfile, char *project_name)
  *  Nothing.
  */
 
-void emit_library(FILE *outfile, char *project_name)
+void emit_library(FILE *outfile, const char *project_name)
 {
   fprintf(outfile, "lib%s.a: %s.o\n", project_name, project_name);
   fprintf(outfile, "\t@echo Creating lib%s.a\n", project_name);
@@ -236,7 +238,7 @@ void emit_library(FILE *outfile, char *project_name)
 }
 
 /**
- *  @fn void emit_object(FILE *outfile, char *project_name)
+ *  @fn void emit_object(FILE *outfile, const char *project_name)
  *
  *  @brief adds target rule to object (.o)
  *
@@ -247,7 +249,7 @@ void emit_library(FILE *outfile, char *project_name)
  *  Nothing.
  */
 
-void emit_object(FILE *outfile, char *project_name)
+void emit_object(FILE *outfile, const char *project_name)
 {
   fprintf(outfile, "%s.o: %s.c %s.h\n",
           project_name,
@@ -258,7 +260,7 @@ void emit_object(FILE *outfile, char *project_name)
 }
 
 /**
- *  @fn void emit_clean(FILE *outfile, char *project_name)
+ *  @fn void emit_clean(FILE *outfile, const char *project_name)
  *
  *  @brief adds target rule to clean build directory
  *
@@ -269,7 +271,7 @@ void emit_object(FILE *outfile, char *project_name)
  *  Nothing.
  */
 
-void emit_clean(FILE *outfile, char *project_name)
+void emit_clean(FILE *outfile, const char *project_name)
 {
   fprintf(outfile, "clean:\n");
 	fprintf(outfile, "\t@rm -f %s.o lib%s.a\n",
@@ -279,7 +281,7 @@ void emit_clean(FILE *outfile, char *project_name)
 }
 
 /**
- *  @fn void emit_install(FILE *outfile, char *project_name)
+ *  @fn void emit_install(FILE *outfile, const char *project_name)
  *
  *  @brief adds target rule to install library and header on system
  *
@@ -290,7 +292,7 @@ void emit_clean(FILE *outfile, char *project_name)
  *  Nothing.
  */
 
-void emit_install(FILE *outfile, char *project_name)
+void emit_install(FILE *outfile, const char *project_name)
 {
   fprintf(outfile, "install:\n");
   fprintf(outfile,
@@ -302,7 +304,7 @@ void emit_install(FILE *outfile, char *project_name)
 }
 
 /**
- *  @fn void emit_uninstall(FILE *outfile, char *project_name)
+ *  @fn void emit_uninstall(FILE *outfile, const char *project_name)
  *
  *  @brief adds target rule to uninstall library and header from system
  *
@@ -313,7 +315,7 @@ void emit_install(FILE *outfile, char *project_name)
  *  Nothing.
  */
 
-void emit_uninstall(FILE *outfile, char *project_name)
+void emit_uninstall(FILE *outfile, const char *project_name)
 {
   fprintf(outfile, "uninstall:\n");
   fprintf(outfile,

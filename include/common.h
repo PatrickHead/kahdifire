@@ -27,6 +27,7 @@
 #include <libxml/tree.h>
 
 #include "strapp.h"
+#include "options.h"
 
     /* declarations for arrays type */
 
@@ -74,36 +75,34 @@ struct aggregates
   char **array;  /**<  array of strings each containing an aggregate name  */
 };
 
-extern aggregates *type_cache;
-
 aggregates *aggregates_new(void);
 void aggregates_free(aggregates *ags);
-void aggregates_add(aggregates *ags, char *name);
-int aggregates_find(aggregates *ags, char *name);
+void aggregates_add(aggregates *ags, const char *name);
+int aggregates_find(aggregates *ags, const char *name);
 
 
   /* Function prototypes for general purpose use  */
 
     /* Functions for high level use */
 
-int gen_code(char *file_name, char *base_name);
+int gen_code(const char *file_name, const char *base_name, options *opts);
 
     /* Functions to enhance XML parsing  */
 
-xmlDocPtr parse_xml(char *buf);
-char *get_attribute(xmlNodePtr node, char *attr_name);
+xmlDocPtr parse_xml(const char *buf);
+char *get_attribute(xmlNodePtr node, const char *attr_name);
 
     /* Functions to manipulate strings */
 
-char *get_project_name(char *base_name);
+char *get_project_name(const char *base_name);
 void str_upper(char *str);
 void str_lower(char *str);
-char *create_base_name(char *file_name);
-char *function_prefix(char *project, char *declaration);
+char *create_base_name(const char *file_name);
+char *function_prefix(const char *project, const char *declaration);
 
     /* Miscellaneous functions */
 
-size_t get_file_size(char *file_name);
+size_t get_file_size(const char *file_name);
 void emit_indent(FILE *outfile, int indent);
 
     /* Functions to assist in XML parsing */
@@ -118,5 +117,6 @@ int array_level_count(xmlNodePtr node);
 int array_pointer_count(xmlNodePtr node);
 xmlNodePtr array_find_scalar(xmlNodePtr node);
 xmlNodePtr array_find_reference(xmlNodePtr node);
+aggregates *build_type_cache(xmlDocPtr doc);
 
 #endif //COMMON_H

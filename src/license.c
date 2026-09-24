@@ -20,10 +20,10 @@
  *  @brief tracks code generation license setting
  */
 
+#include "config.h"
+
 #include <stdio.h>
 #include <string.h>
-
-#include "config.h"
 
 #include "license.h"
 
@@ -56,7 +56,7 @@ license_type license_get_type(void) { return _type; }
 void license_set_type(license_type type) { _type = type; }
 
   /**
-   *  @fn license_type license_string_to_type(char *string)
+   *  @fn license_type license_string_to_type(const char *string)
    *
    *  @brief returns @a license_type from @p string value
    *
@@ -65,7 +65,7 @@ void license_set_type(license_type type) { _type = type; }
    *  @returns license_type
    */
   
-license_type license_string_to_type(char *string)
+license_type license_string_to_type(const char *string)
 {
   license_type type = license_type_none;
 
@@ -119,7 +119,7 @@ char *license_type_to_string(license_type type)
 #include "usalgplv3.txt.h"
 #include "publicdomain.txt.h"
   
-char *license_get_text(license_type type)
+const char *license_get_text(license_type type)
 {
   switch (type)
   {
@@ -146,7 +146,7 @@ char *license_get_text(license_type type)
 
 void license_emit(FILE *outfile)
 {
-  char *license_text = NULL;
+  const char *license_text = NULL;
 
   if (!outfile) outfile = stdout;
 
@@ -157,5 +157,6 @@ void license_emit(FILE *outfile)
   fputs("\n", outfile);
 
 exit:
+  return;
 }
 

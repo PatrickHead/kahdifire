@@ -24,6 +24,8 @@
  *  Output is C language source code
  */
 
+#include "config.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -33,8 +35,6 @@
 #include <unistd.h>
 #include <ctype.h>
 #include <libgen.h>
-
-#include "config.h"
 
 #include "kahdifire.h"
 #include "options.h"
@@ -46,7 +46,7 @@
 void usage(void);
 
   /**
-   *  @fn int main(int argc, char **argv)
+   *  @fn int main(int argc, const char **argv)
    *
    *  @brief Main entry point function for @b kahdifire application
    *
@@ -61,7 +61,10 @@ int main(int argc, char **argv)
   int c;
   char *base_name = NULL;
   char *input_name = NULL;
-  int retval = 0;
+  int retval = 1;
+  options opts;
+
+  memset(&opts, 0, sizeof(options));
 
   while ((c = getopt(argc, argv, "b:a:l:g:hmM:i:tcr")) != EOF)
   {
@@ -108,10 +111,13 @@ int main(int argc, char **argv)
         break;
 
       case 'h':
+        retval = 0;
+        usage();
+        goto exit;
+
       default:
         usage();
         goto exit;
-        break;
     }
   }
 
@@ -130,8 +136,8 @@ int main(int argc, char **argv)
   retval = gen_code(input_name, base_name);
 
 exit:
-  if (base_name) free(base_name);
-  if (input_name) free(input_name);
+  free(base_name);
+  free(input_name);
 
   return retval;
 }

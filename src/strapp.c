@@ -19,15 +19,15 @@
  *  @brief A function to auto allocate and append a string to an existing string.
  */
 
+#include "config.h"
+
 #include <stdlib.h>
 #include <string.h>
-
-#include "config.h"
 
 #include "strapp.h"
 
  /**
-  * @fn char *strapp(char *s1, char *s2)
+  * @fn char *strapp(char *s1, const char *s2)
   *
   * @brief appends @p s2 to @p s1 , reallocating memory
   *
@@ -39,9 +39,9 @@
   * @return pointer to newly formed string
   */
 
-char *strapp(char *s1, char *s2)
+char *strapp(char *s1, const char *s2)
 {
-  int len1, len2;
+  size_t len1, len2;
   char *tmp;
 
   if (!s1)
@@ -60,7 +60,7 @@ char *strapp(char *s1, char *s2)
   if (tmp)
   {
     s1 = tmp;
-    strcat(s1, s2);
+    memcpy(&s1[len1], s2, len2);
   }
 
   return s1;

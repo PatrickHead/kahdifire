@@ -38,7 +38,7 @@ If you have obtained the @b kahdifire source code from a GIT repository, then ex
 
 For both GIT clones and GNU Package tarballs, run the usual `./configure` followed by `make`.
 
-To install the built `kahdifire` utility and **libdedup** library, run `sudo make install`.
+To install the built `kahdifire` utility and GCC plugin, run `sudo make install`.
 
 #### Summary Steps:
 1. git clone <i><u>https://github.com/PatrickHead/kahdifire.git</u></i>
@@ -385,7 +385,7 @@ As of 01/14/2025, this application is currently in beta testing and may contain 
 <a id="getting-help"></a>
 ## Getting help
 
-If you encounter any bugs or require additional help, contact [Patrick Head](mailto:patrick.t.head.ctr@us.navy.mil)
+If you encounter any bugs or require additional help, contact [Patrick Head](mailto:patrickhead@gmail.com)
 
 [Back to Table of Contents](#TOC)
 

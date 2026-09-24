@@ -18,7 +18,7 @@
  *  @brief defines a string that contains the text of a public domain non-license as used in source code files
  */
 
-char *_publicdomain =   /**<  public domain non-license text */
+const char *_publicdomain =   /**<  public domain non-license text */
   "/*\n"
   " *  This is free and unencumbered software released into the public domain.\n"
   " *  \n"

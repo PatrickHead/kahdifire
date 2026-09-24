@@ -24,118 +24,118 @@
  *  Output is C language source code
  */
 
-#include <string.h>
-
 #include "config.h"
+
+#include <string.h>
 
 #include "source-avl.h"
 #include "options.h"
 
 static void emit_aggregate_avl_new_function(FILE *outfile,
                                             xmlNodePtr node,
-                                            char *project,
+                                            const char *project,
                                             int indent);
 static void emit_aggregate_avl_dup_function(FILE *outfile,
                                             xmlNodePtr node,
-                                            char *project,
+                                            const char *project,
                                             int indent);
 static void emit_aggregate_avl_free_function(FILE *outfile,
                                              xmlNodePtr node,
-                                             char *project,
+                                             const char *project,
                                              int indent);
 static void emit_aggregate_avl_insert_function(FILE *outfile,
                                                xmlNodePtr node,
-                                               char *project,
+                                               const char *project,
                                                int indent);
 static void emit_aggregate_avl_delete_function(FILE *outfile,
                                                xmlNodePtr node,
-                                               char *project,
+                                               const char *project,
                                                int indent);
 static void emit_aggregate_avl_find_function(FILE *outfile,
                                              xmlNodePtr node,
-                                             char *project,
+                                             const char *project,
                                              int indent);
 static void emit_aggregate_avl_walk_function(FILE *outfile,
                                              xmlNodePtr node,
-                                             char *project,
+                                             const char *project,
                                              int indent);
 static void emit_aggregate_avl_new_node_function(FILE *outfile,
                                                  xmlNodePtr node,
-                                                 char *project,
+                                                 const char *project,
                                                  int indent);
 static void emit_aggregate_avl_dup_node_function(FILE *outfile,
                                                  xmlNodePtr node,
-                                                 char *project,
+                                                 const char *project,
                                                  int indent);
 static void emit_aggregate_avl_free_node_function(FILE *outfile,
                                                   xmlNodePtr node,
-                                                  char *project,
+                                                  const char *project,
                                                   int indent);
 static void emit_aggregate_avl_cmp_node_function(FILE *outfile,
                                                  xmlNodePtr node,
-                                                 char *project,
+                                                 const char *project,
                                                  int indent);
 
 static void emit_aggregate_avl_new_annotation(FILE *outfile,
                                               xmlNodePtr node,
-                                              char *aggregate_name,
-                                              char *function_prefix,
+                                              const char *aggregate_name,
+                                              const char *function_prefix,
                                               int indent);
 static void emit_aggregate_avl_dup_annotation(FILE *outfile,
                                               xmlNodePtr node,
-                                              char *aggregate_name,
-                                              char *function_prefix,
+                                              const char *aggregate_name,
+                                              const char *function_prefix,
                                               int indent);
 static void emit_aggregate_avl_free_annotation(FILE *outfile,
                                                xmlNodePtr node,
-                                               char *aggregate_name,
-                                               char *function_prefix,
+                                               const char *aggregate_name,
+                                               const char *function_prefix,
                                                int indent);
 static void emit_aggregate_avl_insert_annotation(FILE *outfile,
                                                  xmlNodePtr node,
-                                                 char *aggregate_name,
-                                                 char *function_prefix,
+                                                 const char *aggregate_name,
+                                                 const char *function_prefix,
                                                  int indent);
 static void emit_aggregate_avl_delete_annotation(FILE *outfile,
                                                  xmlNodePtr node,
-                                                 char *aggregate_name,
-                                                 char *function_prefix,
+                                                 const char *aggregate_name,
+                                                 const char *function_prefix,
                                                  int indent);
 static void emit_aggregate_avl_find_annotation(FILE *outfile,
                                                xmlNodePtr node,
-                                               char *aggregate_name,
-                                               char *function_prefix,
+                                               const char *aggregate_name,
+                                               const char *function_prefix,
                                                int indent);
 static void emit_aggregate_avl_walk_annotation(FILE *outfile,
                                                xmlNodePtr node,
-                                               char *aggregate_name,
-                                               char *function_prefix,
+                                               const char *aggregate_name,
+                                               const char *function_prefix,
                                                int indent);
 static void emit_aggregate_avl_new_node_annotation(FILE *outfile,
                                                    xmlNodePtr node,
-                                                   char *aggregate_name,
-                                                   char *function_prefix,
+                                                   const char *aggregate_name,
+                                                   const char *function_prefix,
                                                    int indent);
 static void emit_aggregate_avl_dup_node_annotation(FILE *outfile,
                                                    xmlNodePtr node,
-                                                   char *aggregate_name,
-                                                   char *function_prefix,
+                                                   const char *aggregate_name,
+                                                   const char *function_prefix,
                                                    int indent);
 static void emit_aggregate_avl_free_node_annotation(FILE *outfile,
                                                     xmlNodePtr node,
-                                                    char *aggregate_name,
-                                                    char *function_prefix,
+                                                    const char *aggregate_name,
+                                                    const char *function_prefix,
                                                     int indent);
 static void emit_aggregate_avl_cmp_node_annotation(FILE *outfile,
                                                    xmlNodePtr node,
-                                                   char *aggregate_name,
-                                                   char *function_prefix,
+                                                   const char *aggregate_name,
+                                                   const char *function_prefix,
                                                    int indent);
 
   /**
    *  @fn void emit_aggregate_avl_functions(FILE *outfile,
    *                                          xmlNodePtr node,
-   *                                          char *project_name)
+   *                                          const char *project_name)
    *
    *  @brief generates avl C source code from struct or union element in
    *         @p node
@@ -150,7 +150,7 @@ static void emit_aggregate_avl_cmp_node_annotation(FILE *outfile,
   
 void emit_aggregate_avl_functions(FILE *outfile,
                                     xmlNodePtr node,
-                                    char *project_name)
+                                    const char *project_name)
 {
   char *project = NULL;
   char *name = NULL;
@@ -197,14 +197,16 @@ void emit_aggregate_avl_functions(FILE *outfile,
   emit_aggregate_avl_cmp_node_function(outfile, node, project, indent);
 
 exit:
-  if (project) free(project);
-  if (name) free(name);
+  free(project);
+  free(name);
+
+  return;
 }
 
   /**
    *  @fn void emit_aggregate_avl_new_function(FILE *outfile,
    *                                           xmlNodePtr node,
-   *                                           char *project,
+   *                                           const char *project,
    *                                           int indent)
    *
    *  @brief generates C source code to create new avl struct from element
@@ -221,7 +223,7 @@ exit:
   
 static void emit_aggregate_avl_new_function(FILE *outfile,
                                             xmlNodePtr node,
-                                            char *project,
+                                            const char *project,
                                             int indent)
 {
   char *name = NULL;
@@ -330,15 +332,17 @@ static void emit_aggregate_avl_new_function(FILE *outfile,
   fprintf(outfile, "\n");
 
 exit:
-  if (name) free(name);
-  if (fpre) free(fpre);
-  if (fpre2) free(fpre2);
+  free(name);
+  free(fpre);
+  free(fpre2);
+
+  return;
 }
 
   /**
    *  @fn void emit_aggregate_avl_dup_function(FILE *outfile,
    *                                           xmlNodePtr node,
-   *                                           char *project,
+   *                                           const char *project,
    *                                           int indent)
    *
    *  @brief generates C source code to duplicate avl struct from
@@ -355,7 +359,7 @@ exit:
   
 static void emit_aggregate_avl_dup_function(FILE *outfile,
                                             xmlNodePtr node,
-                                            char *project,
+                                            const char *project,
                                             int indent)
 {
   char *name = NULL;
@@ -427,16 +431,18 @@ static void emit_aggregate_avl_dup_function(FILE *outfile,
   fprintf(outfile, "\n");
 
 exit:
-  if (name) free(name);
-  if (avl_name) free(avl_name);
-  if (fpre) free(fpre);
-  if (fpre2) free(fpre2);
+  free(name);
+  free(avl_name);
+  free(fpre);
+  free(fpre2);
+
+  return;
 }
 
   /**
    *  @fn void emit_aggregate_avl_free_function(FILE *outfile,
    *                                            xmlNodePtr node,
-   *                                            char *project,
+   *                                            const char *project,
    *                                            int indent)
    *
    *  @brief generates C source code to free avl struct from element in @p node
@@ -452,7 +458,7 @@ exit:
   
 static void emit_aggregate_avl_free_function(FILE *outfile,
                                              xmlNodePtr node,
-                                             char *project,
+                                             const char *project,
                                              int indent)
 {
   char *name = NULL;
@@ -512,16 +518,18 @@ static void emit_aggregate_avl_free_function(FILE *outfile,
   fprintf(outfile, "\n");
 
 exit:
-  if (name) free(name);
-  if (avl_name) free(avl_name);
-  if (fpre) free(fpre);
-  if (fpre2) free(fpre2);
+  free(name);
+  free(avl_name);
+  free(fpre);
+  free(fpre2);
+
+  return;
 }
 
   /**
    *  @fn void emit_aggregate_avl_insert_function(FILE *outfile,
    *                                              xmlNodePtr node,
-   *                                              char *project,
+   *                                              const char *project,
    *                                              int indent)
    *
    *  @brief generates C source code to inserta new node into avl struct from
@@ -538,7 +546,7 @@ exit:
   
 static void emit_aggregate_avl_insert_function(FILE *outfile,
                                                xmlNodePtr node,
-                                               char *project,
+                                               const char *project,
                                                int indent)
 {
   char *name = NULL;
@@ -588,15 +596,17 @@ static void emit_aggregate_avl_insert_function(FILE *outfile,
   fprintf(outfile, "\n");
 
 exit:
-  if (name) free(name);
-  if (avl_name) free(avl_name);
-  if (fpre) free(fpre);
+  free(name);
+  free(avl_name);
+  free(fpre);
+
+  return;
 }
 
   /**
    *  @fn void emit_aggregate_avl_delete_function(FILE *outfile,
    *                                              xmlNodePtr node,
-   *                                              char *project,
+   *                                              const char *project,
    *                                              int indent)
    *
    *  @brief generates C source code to delete a node from avl struct
@@ -613,7 +623,7 @@ exit:
   
 static void emit_aggregate_avl_delete_function(FILE *outfile,
                                                xmlNodePtr node,
-                                               char *project,
+                                               const char *project,
                                                int indent)
 {
   char *name = NULL;
@@ -672,16 +682,18 @@ static void emit_aggregate_avl_delete_function(FILE *outfile,
   fprintf(outfile, "\n");
 
 exit:
-  if (name) free(name);
-  if (avl_name) free(avl_name);
-  if (fpre) free(fpre);
-  if (fpre2) free(fpre2);
+  free(name);
+  free(avl_name);
+  free(fpre);
+  free(fpre2);
+
+  return;
 }
 
   /**
    *  @fn void emit_aggregate_avl_find_function(FILE *outfile,
    *                                            xmlNodePtr node,
-   *                                            char *project,
+   *                                            const char *project,
    *                                            int indent)
    *
    *  @brief generates C source code to find a node in avl struct
@@ -698,7 +710,7 @@ exit:
   
 static void emit_aggregate_avl_find_function(FILE *outfile,
                                              xmlNodePtr node,
-                                             char *project,
+                                             const char *project,
                                              int indent)
 {
   char *name = NULL;
@@ -761,16 +773,18 @@ static void emit_aggregate_avl_find_function(FILE *outfile,
   fprintf(outfile, "\n");
 
 exit:
-  if (name) free(name);
-  if (avl_name) free(avl_name);
-  if (fpre) free(fpre);
-  if (fpre2) free(fpre2);
+  free(name);
+  free(avl_name);
+  free(fpre);
+  free(fpre2);
+
+  return;
 }
 
   /**
    *  @fn void emit_aggregate_avl_walk_function(FILE *outfile,
    *                                            xmlNodePtr node,
-   *                                            char *project,
+   *                                            const char *project,
    *                                            int indent)
    *
    *  @brief generates C source code to walk an entire tree in AVL struct
@@ -787,7 +801,7 @@ exit:
   
 static void emit_aggregate_avl_walk_function(FILE *outfile,
                                              xmlNodePtr node,
-                                             char *project,
+                                             const char *project,
                                              int indent)
 {
   char *name = NULL;
@@ -838,16 +852,18 @@ static void emit_aggregate_avl_walk_function(FILE *outfile,
   fprintf(outfile, "\n");
 
 exit:
-  if (name) free(name);
-  if (avl_name) free(avl_name);
-  if (fpre) free(fpre);
-  if (fpre2) free(fpre2);
+  free(name);
+  free(avl_name);
+  free(fpre);
+  free(fpre2);
+
+  return;
 }
 
   /**
    *  @fn void emit_aggregate_avl_new_node_function(FILE *outfile,
    *                                                xmlNodePtr node,
-   *                                                char *project,
+   *                                                const char *project,
    *                                                int indent)
    *
    *  @brief generates C source code to create a new avl node
@@ -864,7 +880,7 @@ exit:
   
 static void emit_aggregate_avl_new_node_function(FILE *outfile,
                                                  xmlNodePtr node,
-                                                 char *project,
+                                                 const char *project,
                                                  int indent)
 {
   char *name = NULL;
@@ -926,16 +942,18 @@ static void emit_aggregate_avl_new_node_function(FILE *outfile,
   fprintf(outfile, "\n");
 
 exit:
-  if (name) free(name);
-  if (avl_name) free(avl_name);
-  if (fpre) free(fpre);
-  if (fpre2) free(fpre2);
+  free(name);
+  free(avl_name);
+  free(fpre);
+  free(fpre2);
+
+  return;
 }
 
   /**
    *  @fn void emit_aggregate_avl_dup_node_function(FILE *outfile,
    *                                                xmlNodePtr node,
-   *                                                char *project,
+   *                                                const char *project,
    *                                                int indent)
    *
    *  @brief generates C source code to copy a avl node
@@ -952,7 +970,7 @@ exit:
   
 static void emit_aggregate_avl_dup_node_function(FILE *outfile,
                                                  xmlNodePtr node,
-                                                 char *project,
+                                                 const char *project,
                                                  int indent)
 {
   char *name = NULL;
@@ -1039,16 +1057,18 @@ static void emit_aggregate_avl_dup_node_function(FILE *outfile,
   fprintf(outfile, "\n");
 
 exit:
-  if (name) free(name);
-  if (avl_name) free(avl_name);
-  if (fpre) free(fpre);
-  if (fpre2) free(fpre2);
+  free(name);
+  free(avl_name);
+  free(fpre);
+  free(fpre2);
+
+  return;
 }
 
   /**
    *  @fn void emit_aggregate_avl_free_node_function(FILE *outfile,
    *                                                 xmlNodePtr node,
-   *                                                 char *project,
+   *                                                 const char *project,
    *                                                 int indent)
    *
    *  @brief generates C source code to free memory allocated to avl node
@@ -1065,7 +1085,7 @@ exit:
   
 static void emit_aggregate_avl_free_node_function(FILE *outfile,
                                                   xmlNodePtr node,
-                                                  char *project,
+                                                  const char *project,
                                                   int indent)
 {
   char *name = NULL;
@@ -1123,16 +1143,18 @@ static void emit_aggregate_avl_free_node_function(FILE *outfile,
   fprintf(outfile, "\n");
 
 exit:
-  if (name) free(name);
-  if (avl_name) free(avl_name);
-  if (fpre) free(fpre);
-  if (fpre2) free(fpre2);
+  free(name);
+  free(avl_name);
+  free(fpre);
+  free(fpre2);
+
+  return;
 }
 
   /**
    *  @fn void emit_aggregate_avl_cmp_node_function(FILE *outfile,
    *                                                xmlNodePtr node,
-   *                                                char *project,
+   *                                                const char *project,
    *                                                int indent)
    *
    *  @brief generates C source code to compare two avl nodes
@@ -1149,7 +1171,7 @@ exit:
   
 static void emit_aggregate_avl_cmp_node_function(FILE *outfile,
                                                  xmlNodePtr node,
-                                                 char *project,
+                                                 const char *project,
                                                  int indent)
 {
   char *name = NULL;
@@ -1221,17 +1243,19 @@ static void emit_aggregate_avl_cmp_node_function(FILE *outfile,
   fprintf(outfile, "\n");
 
 exit:
-  if (name) free(name);
-  if (avl_name) free(avl_name);
-  if (fpre) free(fpre);
-  if (fpre2) free(fpre2);
+  free(name);
+  free(avl_name);
+  free(fpre);
+  free(fpre2);
+
+  return;
 }
 
   /**
    *  @fn void emit_aggregate_avl_new_annotation(FILE *outfile,
    *                                             xmlNodePtr node,
-   *                                             char *aggregate_name,
-   *                                             char *function_prefix,
+   *                                             const char *aggregate_name,
+   *                                             const char *function_prefix,
    *                                             int indent)
    *
    *  @brief emits annotation for aggregate avl new function
@@ -1248,8 +1272,8 @@ exit:
   
 static void emit_aggregate_avl_new_annotation(FILE *outfile,
                                               xmlNodePtr node,
-                                              char *aggregate_name,
-                                              char *function_prefix,
+                                              const char *aggregate_name,
+                                              const char *function_prefix,
                                               int indent)
 {
   if (!outfile || !node || !aggregate_name || !function_prefix) goto exit;
@@ -1350,13 +1374,14 @@ static void emit_aggregate_avl_new_annotation(FILE *outfile,
   }
 
 exit:
+  return;
 }
 
   /**
    *  @fn void emit_aggregate_avl_dup_annotation(FILE *outfile,
    *                                             xmlNodePtr node,
-   *                                             char *aggregate_name,
-   *                                             char *function_prefix,
+   *                                             const char *aggregate_name,
+   *                                             const char *function_prefix,
    *                                             int indent)
    *
    *  @brief emits annotation for aggregate avl dup function
@@ -1373,8 +1398,8 @@ exit:
   
 static void emit_aggregate_avl_dup_annotation(FILE *outfile,
                                               xmlNodePtr node,
-                                              char *aggregate_name,
-                                              char *function_prefix,
+                                              const char *aggregate_name,
+                                              const char *function_prefix,
                                               int indent)
 {
   if (!outfile || !node || !aggregate_name || !function_prefix) goto exit;
@@ -1478,13 +1503,14 @@ static void emit_aggregate_avl_dup_annotation(FILE *outfile,
   }
 
 exit:
+  return;
 }
 
   /**
    *  @fn void emit_aggregate_avl_free_annotation(FILE *outfile,
    *                                              xmlNodePtr node,
-   *                                              char *aggregate_name,
-   *                                              char *function_prefix,
+   *                                              const char *aggregate_name,
+   *                                              const char *function_prefix,
    *                                              int indent)
    *
    *  @brief emits annotation for aggregate avl free function
@@ -1501,8 +1527,8 @@ exit:
   
 static void emit_aggregate_avl_free_annotation(FILE *outfile,
                                                xmlNodePtr node,
-                                               char *aggregate_name,
-                                               char *function_prefix,
+                                               const char *aggregate_name,
+                                               const char *function_prefix,
                                                int indent)
 {
   if (!outfile || !node || !aggregate_name || !function_prefix) goto exit;
@@ -1600,13 +1626,14 @@ static void emit_aggregate_avl_free_annotation(FILE *outfile,
   }
 
 exit:
+  return;
 }
 
   /**
    *  @fn void emit_aggregate_avl_insert_annotation(FILE *outfile,
    *                                                xmlNodePtr node,
-    *                                               char *aggregate_name,
-    *                                               char *function_prefix,
+    *                                               const char *aggregate_name,
+    *                                               const char *function_prefix,
     *                                               int indent)
    *
    *  @brief emits annotation for aggregate avl add function
@@ -1623,8 +1650,8 @@ exit:
   
 static void emit_aggregate_avl_insert_annotation(FILE *outfile,
                                                  xmlNodePtr node,
-                                                 char *aggregate_name,
-                                                 char *function_prefix,
+                                                 const char *aggregate_name,
+                                                 const char *function_prefix,
                                                  int indent)
 {
   if (!outfile || !node || !aggregate_name || !function_prefix) goto exit;
@@ -1732,13 +1759,14 @@ static void emit_aggregate_avl_insert_annotation(FILE *outfile,
   }
 
 exit:
+  return;
 }
 
   /**
    *  @fn void emit_aggregate_avl_delete_annotation(FILE *outfile,
    *                                                xmlNodePtr node,
-   *                                                char *aggregate_name,
-   *                                                char *function_prefix,
+   *                                                const char *aggregate_name,
+   *                                                const char *function_prefix,
    *                                                int indent)
    *
    *  @brief emits annotation for aggregate avl delete function
@@ -1755,8 +1783,8 @@ exit:
   
 static void emit_aggregate_avl_delete_annotation(FILE *outfile,
                                                  xmlNodePtr node,
-                                                 char *aggregate_name,
-                                                 char *function_prefix,
+                                                 const char *aggregate_name,
+                                                 const char *function_prefix,
                                                  int indent)
 {
   if (!outfile || !node || !aggregate_name || !function_prefix) goto exit;
@@ -1866,13 +1894,14 @@ static void emit_aggregate_avl_delete_annotation(FILE *outfile,
   }
 
 exit:
+  return;
 }
 
   /**
    *  @fn void emit_aggregate_avl_find_annotation(FILE *outfile,
    *                                              xmlNodePtr node,
-   *                                              char *aggregate_name,
-   *                                              char *function_prefix,
+   *                                              const char *aggregate_name,
+   *                                              const char *function_prefix,
    *                                              int indent)
    *
    *  @brief emits annotation for aggregate avl find function
@@ -1889,8 +1918,8 @@ exit:
   
 static void emit_aggregate_avl_find_annotation(FILE *outfile,
                                                xmlNodePtr node,
-                                               char *aggregate_name,
-                                               char *function_prefix,
+                                               const char *aggregate_name,
+                                               const char *function_prefix,
                                                int indent)
 {
   if (!outfile || !node || !aggregate_name || !function_prefix) goto exit;
@@ -2003,13 +2032,14 @@ static void emit_aggregate_avl_find_annotation(FILE *outfile,
   }
 
 exit:
+  return;
 }
 
   /**
    *  @fn void emit_aggregate_avl_walk_annotation(FILE *outfile,
    *                                              xmlNodePtr node,
-   *                                              char *aggregate_name,
-   *                                              char *function_prefix,
+   *                                              const char *aggregate_name,
+   *                                              const char *function_prefix,
    *                                              int indent)
    *
    *  @brief emits annotation for aggregate avl walk function
@@ -2026,8 +2056,8 @@ exit:
   
 static void emit_aggregate_avl_walk_annotation(FILE *outfile,
                                                xmlNodePtr node,
-                                               char *aggregate_name,
-                                               char *function_prefix,
+                                               const char *aggregate_name,
+                                               const char *function_prefix,
                                                int indent)
 {
   if (!outfile || !node || !aggregate_name || !function_prefix) goto exit;
@@ -2146,13 +2176,14 @@ static void emit_aggregate_avl_walk_annotation(FILE *outfile,
   }
 
 exit:
+  return;
 }
 
   /**
    *  @fn void emit_aggregate_avl_new_node_annotation(FILE *outfile,
    *                                                  xmlNodePtr node,
-   *                                                  char *aggregate_name,
-   *                                                  char *function_prefix,
+   *                                                  const char *aggregate_name,
+   *                                                  const char *function_prefix,
    *                                                  int indent)
    *
    *  @brief emits annotation for aggregate avl new node function
@@ -2169,8 +2200,8 @@ exit:
   
 static void emit_aggregate_avl_new_node_annotation(FILE *outfile,
                                                    xmlNodePtr node,
-                                                   char *aggregate_name,
-                                                   char *function_prefix,
+                                                   const char *aggregate_name,
+                                                   const char *function_prefix,
                                                    int indent)
 {
   if (!outfile || !node || !aggregate_name || !function_prefix) goto exit;
@@ -2271,13 +2302,14 @@ static void emit_aggregate_avl_new_node_annotation(FILE *outfile,
   }
 
 exit:
+  return;
 }
 
   /**
    *  @fn void emit_aggregate_avl_dup_node_annotation(FILE *outfile,
    *                                                  xmlNodePtr node,
-   *                                                  char *aggregate_name,
-   *                                                  char *function_prefix,
+   *                                                  const char *aggregate_name,
+   *                                                  const char *function_prefix,
    *                                                  int indent)
    *
    *  @brief emits annotation for aggregate avl dup node function
@@ -2294,8 +2326,8 @@ exit:
   
 static void emit_aggregate_avl_dup_node_annotation(FILE *outfile,
                                                    xmlNodePtr node,
-                                                   char *aggregate_name,
-                                                   char *function_prefix,
+                                                   const char *aggregate_name,
+                                                   const char *function_prefix,
                                                    int indent)
 {
   if (!outfile || !node || !aggregate_name || !function_prefix) goto exit;
@@ -2392,13 +2424,14 @@ static void emit_aggregate_avl_dup_node_annotation(FILE *outfile,
   }
 
 exit:
+  return;
 }
 
   /**
    *  @fn void emit_aggregate_avl_free_node_annotation(FILE *outfile,
    *                                                   xmlNodePtr node,
-   *                                                   char *aggregate_name,
-   *                                                   char *function_prefix,
+   *                                                   const char *aggregate_name,
+   *                                                   const char *function_prefix,
    *                                                   int indent)
    *
    *  @brief emits annotation for aggregate avl free node function
@@ -2415,8 +2448,8 @@ exit:
   
 static void emit_aggregate_avl_free_node_annotation(FILE *outfile,
                                                    xmlNodePtr node,
-                                                   char *aggregate_name,
-                                                   char *function_prefix,
+                                                   const char *aggregate_name,
+                                                   const char *function_prefix,
                                                    int indent)
 {
   if (!outfile || !node || !aggregate_name || !function_prefix) goto exit;
@@ -2512,13 +2545,14 @@ static void emit_aggregate_avl_free_node_annotation(FILE *outfile,
   }
 
 exit:
+  return;
 }
 
   /**
    *  @fn void emit_aggregate_avl_cmp_node_annotation(FILE *outfile,
    *                                                  xmlNodePtr node,
-   *                                                  char *aggregate_name,
-   *                                                  char *function_prefix,
+   *                                                  const char *aggregate_name,
+   *                                                  const char *function_prefix,
    *                                                  int indent)
    *
    *  @brief emits annotation for aggregate avl cmp node function
@@ -2535,8 +2569,8 @@ exit:
   
 static void emit_aggregate_avl_cmp_node_annotation(FILE *outfile,
                                                    xmlNodePtr node,
-                                                   char *aggregate_name,
-                                                   char *function_prefix,
+                                                   const char *aggregate_name,
+                                                   const char *function_prefix,
                                                    int indent)
 {
   if (!outfile || !node || !aggregate_name || !function_prefix) goto exit;
@@ -2642,5 +2676,6 @@ static void emit_aggregate_avl_cmp_node_annotation(FILE *outfile,
   }
 
 exit:
+  return;
 }
 

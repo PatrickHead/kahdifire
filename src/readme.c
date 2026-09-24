@@ -24,6 +24,8 @@
  *  Output is readme
  */
 
+#include "config.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -34,17 +36,15 @@
 #include <ctype.h>
 #include <libgen.h>
 
-#include "config.h"
-
 #include "readme.h"
 #include "options.h"
 
   /*  Module specific function prototypes  */
 
-void emit_readme(FILE *outfile, char *project_name);
+void emit_readme(FILE *outfile, const char *project_name);
 
 /**
- *  @fn void gen_readme(xmlDocPtr doc, char *base_name)
+ *  @fn void gen_readme(xmlDocPtr doc, const char *base_name)
  *
  *  @brief generates readme file
  *
@@ -55,11 +55,11 @@ void emit_readme(FILE *outfile, char *project_name);
  *  Nothing.
  */
 
-void gen_readme(xmlDocPtr doc, char *base_name)
+void gen_readme(xmlDocPtr doc, const char *base_name)
 {
   xmlNodePtr root;
   FILE *outfile = NULL;
-  char *tmp;
+  char *tmp = NULL;
   char *base_dir = NULL;
   char *outfile_name = NULL;
   char *project_name = NULL;
@@ -83,10 +83,7 @@ void gen_readme(xmlDocPtr doc, char *base_name)
   project_name = get_project_name(base_name);
   if (!project_name) goto exit;
 
-  outfile_name = malloc(strlen(base_dir) +
-                        strlen("Doxygen") +
-                        strlen(project_name) +
-                        3);
+  outfile_name = malloc(strlen(base_dir) + strlen("README.md") + 3);
   if (!outfile_name) goto exit;
 
   sprintf(outfile_name, "%s/README.md", base_dir);
@@ -98,12 +95,14 @@ void gen_readme(xmlDocPtr doc, char *base_name)
 
 exit:
   if (outfile) fclose(outfile);
-  if (outfile_name) free(outfile_name);
-  if (project_name) free(project_name);
-  if (base_dir) free(base_dir);
+  free(outfile_name);
+  free(project_name);
+  free(tmp);
+
+  return;
 }
 
-static char *_readme =  /**<  format string for readme */
+static const char *_readme =  /**<  format string for readme */
   "# %s - library to handle enums, structs and unions\n"
   "\n"
   "USER SUPPLIED DESCRIPTION GOES HERE\n"
@@ -162,7 +161,7 @@ static char *_readme =  /**<  format string for readme */
   "\n";
 
 /**
- *  @fn void emit_readme(FILE *outfile, char *project_name)
+ *  @fn void emit_readme(FILE *outfile, const char *project_name)
  *
  *  @brief outputs README file
  *
@@ -173,7 +172,7 @@ static char *_readme =  /**<  format string for readme */
  *  Nothing.
  */
 
-void emit_readme(FILE *outfile, char *project_name)
+void emit_readme(FILE *outfile, const char *project_name)
 {
   char *license_text = NULL;
   char *p;

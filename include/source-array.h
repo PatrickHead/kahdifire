@@ -31,6 +31,6 @@
 
 void emit_aggregate_array_functions(FILE *outfile,
                                     xmlNodePtr node,
-                                    char *project_name);
+                                    const char *project_name);
 
 #endif //SOURCE_ARRAY_H

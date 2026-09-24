@@ -29,11 +29,21 @@
 
 #include "common.h"
 
-void emit_aggregate_avl_typedefs(FILE *outfile, xmlNodePtr node, int indent);
-bool emit_aggregate_avl(FILE *outfile, xmlNodePtr node, int indent);
-bool emit_aggregate_avl_node(FILE *outfile, xmlNodePtr node, int indent);
+void emit_aggregate_avl_typedefs(FILE *outfile,
+                                 xmlNodePtr node,
+                                 options *opts,
+                                 int indent);
+bool emit_aggregate_avl(FILE *outfile,
+                        xmlNodePtr node,
+                        options *opts,
+                        int indent);
+bool emit_aggregate_avl_node(FILE *outfile,
+                             xmlNodePtr node,
+                             options *opts,
+                             int indent);
 void emit_aggregate_avl_function_prototypes(FILE *outfile,
                                             xmlNodePtr node,
-                                            char *project_name);
+                                            options *opts,
+                                            const char *project_name);
 
 #endif //HEADER_AVL_H

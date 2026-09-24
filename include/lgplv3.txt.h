@@ -18,7 +18,7 @@
  *  @brief defines a string that contains the text of LGPLv3 as used in source code files
  */
 
-char *_lgplv3 =   /**<  LGPLv3 text */
+const char *_lgplv3 =   /**<  LGPLv3 text */
   "/*\n"
   " *  Copyright YEAR - FIRSTNAME LASTNAME\n"
   " *\n"

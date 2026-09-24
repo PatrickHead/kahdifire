@@ -24,50 +24,58 @@
  *  Output is C language source code
  */
 
-#include <string.h>
-
 #include "config.h"
+
+#include <string.h>
 
 #include "header-avl.h"
 #include "options.h"
 
 static void emit_aggregate_avl_typedefs_annotation(FILE *outfile,
                                                    xmlNodePtr node,
-                                                   char *aggregate_name,
-                                                   char *avl_name,
+                                                   options *opts,
+                                                   const char *aggregate_name,
+                                                   const char *avl_name,
                                                    int indent);
 static void emit_aggregate_avl_node_annotation(FILE *outfile,
                                                 xmlNodePtr node,
-                                                char *aggregate_name,
-                                                char *node_name,
+                                                options *opts,
+                                                const char *aggregate_name,
+                                                const char *node_name,
                                                 int indent);
 static void emit_aggregate_avl_annotation(FILE *outfile,
                                            xmlNodePtr node,
-                                           char *aggregate_name,
-                                           char *avl_name,
+                                           options *opts,
+                                           const char *aggregate_name,
+                                           const char *avl_name,
                                            int indent);
 
   /**
    *  @fn void emit_aggregate_avl_typedefs(FILE *outfile,
    *                                       xmlNodePtr node,
+   *                                       options *opts,
    *                                       int indent)
    *
    *  @brief emits typedef for avl action functions
    *
    *  @param outfile - open FILE * for writing
    *  @param node - xmlNodePtr containing struct or union element
+   *  @param opts - pointer to @a options struct
    *  @param indent - indent level for output
    *
    *  @par Returns
    *  Nothing.
    */
   
-void emit_aggregate_avl_typedefs(FILE *outfile, xmlNodePtr node, int indent)
+void emit_aggregate_avl_typedefs(FILE *outfile,
+                                 xmlNodePtr node,
+                                 options *opts,
+                                 int indent)
 {
   char *name = NULL;
   char *avl_name = NULL;
 
-  if (!option_gen_avl()) goto exit;
+  if (!option_gen_avl(opts)) goto exit;
 
   if (!outfile || !node) goto exit;
 
@@ -83,6 +91,7 @@ void emit_aggregate_avl_typedefs(FILE *outfile, xmlNodePtr node, int indent)
 
   emit_aggregate_avl_typedefs_annotation(outfile,
                                          node,
+                                         opts,
                                          name,
                                          avl_name,
                                          indent + 1);
@@ -93,32 +102,41 @@ void emit_aggregate_avl_typedefs(FILE *outfile, xmlNodePtr node, int indent)
           avl_name ? avl_name : "UNKNOWN");
 
 exit:
-  if (name) free(name);
-  if (avl_name) free(avl_name);
+  free(name);
+  free(avl_name);
+
+  return;
 }
 
   /**
-   *  @fn void emit_aggregate_avl(FILE *outfile, xmlNodePtr node, int indent)
+   *  @fn void emit_aggregate_avl(FILE *outfile,
+   *                              xmlNodePtr node,
+   *                              options *opts,
+   *                              int indent)
    *
    *  @brief emits avl struct for struct or union from @p node to @p outfile
    *
    *  @param outfile - open FILE * for writing
    *  @param node - xmlNodePtr containing struct or union element
+   *  @param opts - pointer to @a options struct
    *  @param indent - indent level for output
    *
    *  @par Returns
    *  Nothing.
    */
   
-bool emit_aggregate_avl(FILE *outfile, xmlNodePtr node, int indent)
+bool emit_aggregate_avl(FILE *outfile,
+                        xmlNodePtr node,
+                        options *opts,
+                        int indent)
 {
   char *name = NULL;
   char *avl_name = NULL;
-  int len;
+  size_t len;
   int is_doxygen = 0;
   bool did_it = false;
 
-  if (!option_gen_avl()) goto exit;
+  if (!option_gen_avl(opts)) goto exit;
 
   if (!outfile || !node) goto exit;
 
@@ -126,7 +144,7 @@ bool emit_aggregate_avl(FILE *outfile, xmlNodePtr node, int indent)
       strcmp((char *)node->name, "union"))
     goto exit;
 
-  switch (option_annotation())
+  switch (option_annotation(opts))
   {
     case annotation_type_doxygen: is_doxygen = 1; break;
     default: is_doxygen = 0; break;
@@ -138,7 +156,7 @@ bool emit_aggregate_avl(FILE *outfile, xmlNodePtr node, int indent)
   avl_name = strapp(avl_name, name);
   avl_name = strapp(avl_name, "_avl");
 
-  emit_aggregate_avl_annotation(outfile, node, name, avl_name, indent + 1);
+  emit_aggregate_avl_annotation(outfile, node, opts, name, avl_name, indent + 1);
 
   emit_indent(outfile, indent);
   fprintf(outfile, "struct %s\n", avl_name ? avl_name : "!!ERROR!!");
@@ -154,8 +172,8 @@ bool emit_aggregate_avl(FILE *outfile, xmlNodePtr node, int indent)
   emit_indent(outfile, indent);
   fprintf(outfile,
           "%-*.*s/*%s  underlying avl  */\n",
-          len,
-          len,
+          (int)len,
+          (int)len,
           "avl *_avl;",
           is_doxygen ? "*<" : "");
 
@@ -167,8 +185,8 @@ bool emit_aggregate_avl(FILE *outfile, xmlNodePtr node, int indent)
   did_it = true;
 
 exit:
-  if (name) free(name);
-  if (avl_name) free(avl_name);
+  free(name);
+  free(avl_name);
 
   return did_it;
 }
@@ -176,6 +194,7 @@ exit:
   /**
    *  @fn bool emit_aggregate_avl_node(FILE *outfile,
    *                                    xmlNodePtr node,
+   *                                    options *opts,
    *                                    int indent)
    *
    *  @brief emits avl node struct for struct or union from @p node to
@@ -183,21 +202,25 @@ exit:
    *
    *  @param outfile - open FILE * for writing
    *  @param node - xmlNodePtr containing struct or union element
+   *  @param opts - pointer to @a options struct
    *  @param indent - indent level for output
    *
    *  @return true if emitted, false otherwise
    */
   
-bool emit_aggregate_avl_node(FILE *outfile, xmlNodePtr node, int indent)
+bool emit_aggregate_avl_node(FILE *outfile,
+                             xmlNodePtr node,
+                             options *opts,
+                             int indent)
 {
   char *name = NULL;
   char *node_name = NULL;
   char *field = NULL;
-  int len;
+  size_t len;
   int is_doxygen = 0;
   bool did_it = false;
 
-  if (!option_gen_avl()) goto exit;
+  if (!option_gen_avl(opts)) goto exit;
 
   if (!outfile || !node) goto exit;
 
@@ -205,7 +228,7 @@ bool emit_aggregate_avl_node(FILE *outfile, xmlNodePtr node, int indent)
       strcmp((char *)node->name, "union"))
     goto exit;
 
-  switch (option_annotation())
+  switch (option_annotation(opts))
   {
     case annotation_type_doxygen: is_doxygen = 1; break;
     default: is_doxygen = 0; break;
@@ -225,6 +248,7 @@ bool emit_aggregate_avl_node(FILE *outfile, xmlNodePtr node, int indent)
 
   emit_aggregate_avl_node_annotation(outfile,
                                       node,
+                                      opts,
                                       name,
                                       node_name,
                                       indent + 1);
@@ -241,8 +265,8 @@ bool emit_aggregate_avl_node(FILE *outfile, xmlNodePtr node, int indent)
   emit_indent(outfile, indent);
   fprintf(outfile,
           "%-*.*s  /*%s  previous node  */\n",
-          len,
-          len,
+          (int)len,
+          (int)len,
           field,
           is_doxygen ? "*<" : "");
 
@@ -250,8 +274,8 @@ bool emit_aggregate_avl_node(FILE *outfile, xmlNodePtr node, int indent)
   emit_indent(outfile, indent);
   fprintf(outfile,
           "%-*.*s  /*%s  next node      */\n",
-          len,
-          len,
+          (int)len,
+          (int)len,
           field,
           is_doxygen ? "*<" : "");
 
@@ -259,8 +283,8 @@ bool emit_aggregate_avl_node(FILE *outfile, xmlNodePtr node, int indent)
   emit_indent(outfile, indent);
   fprintf(outfile,
           "%-*.*s  /*%s  %s data  */\n",
-          len,
-          len,
+          (int)len,
+          (int)len,
           field,
           is_doxygen ? "*<" : "",
           node_name);
@@ -273,8 +297,8 @@ bool emit_aggregate_avl_node(FILE *outfile, xmlNodePtr node, int indent)
   did_it = true;
 
 exit:
-  if (name) free(name);
-  if (node_name) free(node_name);
+  free(name);
+  free(node_name);
 
   return did_it;
 }
@@ -282,13 +306,15 @@ exit:
   /**
    *  @fn void emit_aggregate_avl_function_prototypes(FILE *outfile,
    *                                                   xmlNodePtr node,
-   *                                                   char *project_name)
+   *                                                   options *opts,
+   *                                                   const char *project_name)
    *
    *  @brief emits utility avl function prototypes for struct or union in
    *         @p node to @p outfile
    *
    *  @param outfile - open FILE * for writing
    *  @param node - xmlNodePtr containing struct or union element
+   *  @param opts - pointer to @a options struct
    *  @param project_name - string containing project name
    *
    *  @par Returns
@@ -297,14 +323,15 @@ exit:
   
 void emit_aggregate_avl_function_prototypes(FILE *outfile,
                                              xmlNodePtr node,
-                                             char *project_name)
+                                             options *opts,
+                                             const char *project_name)
 {
   char *name = NULL;
   char *project = NULL;
   char *avl_name = NULL;
   char *function_prefix = NULL;
 
-  if (!option_gen_avl()) goto exit;
+  if (!option_gen_avl(opts)) goto exit;
 
   if (!outfile || !node) goto exit;
 
@@ -409,23 +436,27 @@ void emit_aggregate_avl_function_prototypes(FILE *outfile,
   fprintf(outfile, "\n");
 
 exit:
-  if (name) free(name);
-  if (project) free(project);
-  if (avl_name) free(avl_name);
-  if (function_prefix) free(function_prefix);
+  free(name);
+  free(project);
+  free(avl_name);
+  free(function_prefix);
+
+  return;
 }
 
   /**
    *  @fn void emit_aggregate_avl_node_annotation(FILE *outfile,
    *                                               xmlNodePtr node,
-   *                                               char *aggregate_name,
-   *                                               char *avl_name,
+   *                                               options *opts,
+   *                                               const char *aggregate_name,
+   *                                               const char *avl_name,
    *                                               int indent)
    *
    *  @brief emits annotation for a node of an avl tree of structs or unions
    *
    *  @param outfile - open FILE * for writing
    *  @param node - xmlNodePtr containing struct or union element
+   *  @param opts - pointer to @a options struct
    *  @param aggregate_name - string containing typedef name of base aggregate
    *  @param avl_name - string containing typedef avl
    *  @param indent - indent level for output
@@ -436,20 +467,21 @@ exit:
   
 static void emit_aggregate_avl_node_annotation(FILE *outfile,
                                                 xmlNodePtr node,
-                                                char *aggregate_name,
-                                                char *node_name,
+                                                options *opts,
+                                                const char *aggregate_name,
+                                                const char *node_name,
                                                 int indent)
 {
   if (!outfile || !node || !aggregate_name || !node_name) goto exit;
   if (!node->name) goto exit;
 
-  if (!option_annotation()) goto exit;
+  if (!option_annotation(opts)) goto exit;
 
   if (strcmp((char *)node->name, "struct") &&
       strcmp((char *)node->name, "union"))
     goto exit;
 
-  switch (option_annotation())
+  switch (option_annotation(opts))
   {
     case annotation_type_doxygen:
       emit_indent(outfile, indent);
@@ -491,13 +523,15 @@ static void emit_aggregate_avl_node_annotation(FILE *outfile,
   }
 
 exit:
+  return;
 }
 
   /**
    *  @fn void emit_aggregate_avl_annotation(FILE *outfile,
    *                                          xmlNodePtr node,
-   *                                          char *aggregate_name,
-   *                                          char *avl_name,
+   *                                          options *opts,
+   *                                          const char *aggregate_name,
+   *                                          const char *avl_name,
    *                                          int indent)
    *
    *  @brief emits annotation for an avl tree of structs or unions
@@ -514,20 +548,21 @@ exit:
   
 static void emit_aggregate_avl_annotation(FILE *outfile,
                                            xmlNodePtr node,
-                                           char *aggregate_name,
-                                           char *avl_name,
+                                           options *opts,
+                                           const char *aggregate_name,
+                                           const char *avl_name,
                                            int indent)
 {
   if (!outfile || !node || !aggregate_name || !avl_name) goto exit;
   if (!node->name) goto exit;
 
-  if (!option_annotation()) goto exit;
+  if (!option_annotation(opts)) goto exit;
 
   if (strcmp((char *)node->name, "struct") &&
       strcmp((char *)node->name, "union"))
     goto exit;
 
-  switch (option_annotation())
+  switch (option_annotation(opts))
   {
     case annotation_type_doxygen:
       emit_indent(outfile, indent);
@@ -569,14 +604,16 @@ static void emit_aggregate_avl_annotation(FILE *outfile,
   }
 
 exit:
+  return;
 }
 
   /**
    *  @fn static void emit_aggregate_avl_typedefs_annotation(FILE *outfile,
-   *                                                        xmlNodePtr node,
-   *                                                        char *aggregate_name,
-   *                                                        char *avl_name,
-   *                                                        int indent)
+   *                                                xmlNodePtr node,
+   *                                                options *opts,
+   *                                                const char *aggregate_name,
+   *                                                const char *avl_name,
+   *                                                int indent)
    *
    *  @brief emits annotation for avl tree typedefs
    *
@@ -592,20 +629,21 @@ exit:
   
 static void emit_aggregate_avl_typedefs_annotation(FILE *outfile,
                                                    xmlNodePtr node,
-                                                   char *aggregate_name,
-                                                   char *avl_name,
+                                                   options *opts,
+                                                   const char *aggregate_name,
+                                                   const char *avl_name,
                                                    int indent)
 {
   if (!outfile || !node || !aggregate_name || !avl_name) goto exit;
   if (!node->name) goto exit;
 
-  if (!option_annotation()) goto exit;
+  if (!option_annotation(opts)) goto exit;
 
   if (strcmp((char *)node->name, "struct") &&
       strcmp((char *)node->name, "union"))
     goto exit;
 
-  switch (option_annotation())
+  switch (option_annotation(opts))
   {
     case annotation_type_doxygen:
       emit_indent(outfile, indent);
@@ -663,5 +701,6 @@ static void emit_aggregate_avl_typedefs_annotation(FILE *outfile,
   }
 
 exit:
+  return;
 }
 
