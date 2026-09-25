@@ -31,6 +31,7 @@
 
 void emit_aggregate_avl_functions(FILE *outfile,
                                   xmlNodePtr node,
+                                  options *opts,
                                   const char *project_name);
 
 #endif //SOURCE_AVL_H

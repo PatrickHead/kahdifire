@@ -29,6 +29,6 @@
 
 #include "common.h"
 
-void gen_makefile(xmlDocPtr doc, const char *base_name);
+void gen_makefile(xmlDocPtr doc, options *opts, const char *base_name);
 
 #endif //MAKEFILE_H

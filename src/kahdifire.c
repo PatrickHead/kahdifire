@@ -65,25 +65,27 @@ int main(int argc, char **argv)
   options opts;
 
   memset(&opts, 0, sizeof(options));
+  option_set_makefile_options(&opts,
+                          "CC=gcc,COPTS=-Wall -O3 -g0,INSTALL_DIR=/usr/local");
 
   while ((c = getopt(argc, argv, "b:a:l:g:hmM:i:tcr")) != EOF)
   {
     switch (c)
     {
       case 'r':
-        option_gen_readme_on();
+        option_gen_readme_on(&opts);
         break;
 
       case 'm':
-        option_gen_makefile_on();
+        option_gen_makefile_on(&opts);
         break;
 
       case 'M':
-        option_set_makefile_options(optarg);
+        option_set_makefile_options(&opts, optarg);
         break;
 
       case 'a':
-        option_set_annotation(optarg);
+        option_set_annotation(&opts, optarg);
         break;
 
       case 'b':
@@ -91,23 +93,23 @@ int main(int argc, char **argv)
         break;
 
       case 'l':
-        option_set_license(optarg);
+        option_set_license(&opts, optarg);
         break;
 
       case 'g':
-        option_set_generator_options(optarg);
+        option_set_generator_options(&opts, optarg);
         break;
 
       case 't':
-        option_assume_typedefs_on();
+        option_assume_typedefs_on(&opts);
         break;
 
       case 'i':
-        option_set_includes(optarg);
+        option_set_includes(&opts, optarg);
         break;
 
       case 'c':
-        option_cpp_compatible_on();
+        option_cpp_compatible_on(&opts);
         break;
 
       case 'h':
@@ -133,7 +135,7 @@ int main(int argc, char **argv)
   if (!base_name) base_name = create_base_name(input_name);
   if (!base_name) goto exit;
 
-  retval = gen_code(input_name, base_name);
+  retval = gen_code(input_name, base_name, &opts);
 
 exit:
   free(base_name);

@@ -46,30 +46,54 @@
 
 static void emit_header_guard_start(FILE *outfile, const char *project_name);
 static void emit_header_guard_end(FILE *outfile, const char *project_name);
-static void emit_header_cpp_compat_start(FILE *outfile);
-static void emit_header_cpp_compat_end(FILE *outfile);
-static void emit_header_annotation(FILE *outfile, const char *file_name);
-static void emit_header_includes(FILE *outfile);
-static void emit_typedef(FILE *outfile, xmlNodePtr node, int indent);
+static void emit_header_cpp_compat_start(FILE *outfile, options *opts);
+static void emit_header_cpp_compat_end(FILE *outfile, options *opts);
+static void emit_header_annotation(FILE *outfile,
+                                   options *opts,
+                                   const char *file_name);
+static void emit_header_includes(FILE *outfile, options *opts);
+static void emit_typedef(FILE *outfile,
+                         xmlNodePtr node,
+                         options *opts,
+                         int indent);
 static void emit_typedef_annotation(FILE *outfile,
                                     xmlNodePtr node,
+                                    options *opts,
                                     const char *name,
                                     int indent);
-static void emit_enum(FILE *outfile, xmlNodePtr node, int indent);
+static void emit_enum(FILE *outfile,
+                      xmlNodePtr node,
+                      options *opts,
+                      int indent);
 static void emit_enum_annotation(FILE *outfile,
                                  xmlNodePtr node,
+                                 options *opts,
                                  const char *name,
                                  int indent);
-static void emit_enum_items(FILE *outfile, xmlNodePtr node, int indent);
-static bool emit_aggregate(FILE *outfile, xmlNodePtr node, int indent);
+static void emit_enum_items(FILE *outfile,
+                            xmlNodePtr node,
+                            options *opts,
+                            int indent);
+static bool emit_aggregate(FILE *outfile,
+                           xmlNodePtr node,
+                           options *opts,
+                           int indent);
 static void emit_aggregate_annotation(FILE *outfile,
                                       xmlNodePtr node,
+                                      options *opts,
                                       const char *name,
                                       int indent);
-static void emit_fields(FILE *outfile, xmlNodePtr node, int indent);
-static void emit_type_reference(FILE *outfile, xmlNodePtr node, int indent);
+static void emit_fields(FILE *outfile,
+                        xmlNodePtr node,
+                        options *opts,
+                        int indent);
+static void emit_type_reference(FILE *outfile,
+                                xmlNodePtr node,
+                                options *opts,
+                                int indent);
 static void emit_function_prototypes(FILE *outfile,
                                      xmlNodePtr node,
+                                     options *opts,
                                      const char *project_name);
 static void emit_enum_function_prototypes(FILE *outfile,
                                           xmlNodePtr node,
@@ -84,18 +108,19 @@ static void emit_aggregate_field_function_prototypes(FILE *outfile,
                                                      const char *sub_field_name);
 
   /**
-   *  @fn void gen_header(xmlDocPtr doc, const char *base_name)
+   *  @fn void gen_header(xmlDocPtr doc, options *opts, const char *base_name)
    *
    *  @brief generates C header from enum, struct and union declarations
    *
    *  @param doc - xmlDocPtr containing declaration metadata
+   *  @param opts - pointer to @a options struct
    *  @param base_name - basic name of project for output files
    *
    *  @par Returns
    *  Nothing.
    */
   
-void gen_header(xmlDocPtr doc, const char *base_name)
+void gen_header(xmlDocPtr doc, options *opts, const char *base_name)
 {
   xmlNodePtr root;
   xmlNodePtr node;
@@ -125,7 +150,7 @@ void gen_header(xmlDocPtr doc, const char *base_name)
 
   str_upper(project_name);
 
-  switch (option_license())
+  switch (option_license(opts))
   {
     case license_type_GPL_v3:
     case license_type_LGPL_v3:
@@ -138,15 +163,15 @@ void gen_header(xmlDocPtr doc, const char *base_name)
 
   license_emit(outfile);
 
-  emit_header_annotation(outfile, basename(outfile_name));
+  emit_header_annotation(outfile, opts, basename(outfile_name));
 
   emit_header_guard_start(outfile, project_name);
 
-  emit_header_cpp_compat_start(outfile);
+  emit_header_cpp_compat_start(outfile, opts);
 
     // Emit warning about USER ANNOTATION
 
-  switch (option_annotation())
+  switch (option_annotation(opts))
   {
     case annotation_type_text:
     case annotation_type_doxygen:
@@ -162,7 +187,7 @@ void gen_header(xmlDocPtr doc, const char *base_name)
 
     // Emit project based include files
 
-  emit_header_includes(outfile);
+  emit_header_includes(outfile, opts);
 
     // Emit typedefs for all enums, structs, and unions
 
@@ -175,7 +200,7 @@ void gen_header(xmlDocPtr doc, const char *base_name)
   fprintf(outfile, "\n");
 
   for (node = root->children; node; node = node->next)
-    emit_typedef(outfile, node, 0);
+    emit_typedef(outfile, node, opts, 0);
 
     // Emit all enums, structs, and unions
 
@@ -191,23 +216,23 @@ void gen_header(xmlDocPtr doc, const char *base_name)
   {
     if (!strcmp((char *)node->name, "enum"))
     {
-      emit_enum(outfile, node, 0);
+      emit_enum(outfile, node, opts, 0);
       fprintf(outfile, ";\n\n");
     }
     else if (!strcmp((char *)node->name, "struct") ||
              !strcmp((char *)node->name, "union"))
     {
-      if (emit_aggregate(outfile, node, 0))
+      if (emit_aggregate(outfile, node, opts, 0))
         fprintf(outfile, ";\n\n");
-      if (emit_aggregate_array(outfile, node, 0))
+      if (emit_aggregate_array(outfile, node, opts, 0))
         fprintf(outfile, ";\n\n");
-      if (emit_aggregate_list_node(outfile, node, 0))
+      if (emit_aggregate_list_node(outfile, node, opts, 0))
         fprintf(outfile, ";\n\n");
-      if (emit_aggregate_list(outfile, node, 0))
+      if (emit_aggregate_list(outfile, node, opts, 0))
         fprintf(outfile, ";\n\n");
-      if (emit_aggregate_avl_node(outfile, node, 0))
+      if (emit_aggregate_avl_node(outfile, node, opts, 0))
         fprintf(outfile, ";\n\n");
-      if (emit_aggregate_avl(outfile, node, 0))
+      if (emit_aggregate_avl(outfile, node, opts, 0))
         fprintf(outfile, ";\n\n");
     }
     else
@@ -227,9 +252,9 @@ void gen_header(xmlDocPtr doc, const char *base_name)
   fprintf(outfile, "\n");
 
   for (node = root->children; node; node = node->next)
-    emit_function_prototypes(outfile, node, project_name);
+    emit_function_prototypes(outfile, node, opts, project_name);
 
-  emit_header_cpp_compat_end(outfile);
+  emit_header_cpp_compat_end(outfile, opts);
 
   emit_header_guard_end(outfile, project_name);
 
@@ -242,19 +267,23 @@ exit:
 }
 
   /**
-   *  @fn void emit_enum(FILE *outfile, xmlNodePtr node, int indent)
+   *  @fn void emit_enum(FILE *outfile,
+   *                     xmlNodePtr node,
+   *                     options *opts,
+   *                     int indent)
    *
    *  @brief emits enum code from enum element in @p node to @p outfile
    *
    *  @param outfile - open FILE * for writing
    *  @param node - xmlNodePtr containing enum element
+   *  @param opts - pointer to @a options struct
    *  @param indent - indent level for output
    *
    *  @par Returns
    *  Nothing.
    */
   
-static void emit_enum(FILE *outfile, xmlNodePtr node, int indent)
+static void emit_enum(FILE *outfile, xmlNodePtr node, options *opts, int indent)
 {
   char *name = NULL;
 
@@ -263,7 +292,7 @@ static void emit_enum(FILE *outfile, xmlNodePtr node, int indent)
   name = get_attribute(node, "name");
   if (!name) goto exit;
 
-  emit_enum_annotation(outfile, node, name, indent + 1);
+  emit_enum_annotation(outfile, node, opts, name, indent + 1);
 
   emit_indent(outfile, indent);
   fprintf(outfile, "typedef enum\n");
@@ -273,7 +302,7 @@ static void emit_enum(FILE *outfile, xmlNodePtr node, int indent)
 
   ++indent;
 
-  emit_enum_items(outfile, node->children, indent);
+  emit_enum_items(outfile, node->children, opts, indent);
 
   --indent;
 
@@ -289,6 +318,7 @@ exit:
   /**
    *  @fn void emit_enum_annotation(FILE *outfile,
    *                                xmlNodePtr node,
+   *                                options *opts,
    *                                const char *name,
    *                                int indent)
    *
@@ -296,6 +326,7 @@ exit:
    *
    *  @param outfile - open FILE * for writing
    *  @param node - xmlNodePtr containing enum
+   *  @param opts - pointer to @a options struct
    *  @param name - string containing typedef name
    *  @param indent - indent level for output
    *
@@ -305,18 +336,19 @@ exit:
   
 static void emit_enum_annotation(FILE *outfile,
                                  xmlNodePtr node,
+                                 options *opts,
                                  const char *name,
                                  int indent)
 {
   if (!outfile || !node || !name) goto exit;
   if (!node->name) goto exit;
 
-  if (!option_annotation()) goto exit;
+  if (!option_annotation(opts)) goto exit;
 
   if (strcmp((char *)node->name, "enum"))
     goto exit;
 
-  switch (option_annotation())
+  switch (option_annotation(opts))
   {
     case annotation_type_doxygen:
       emit_indent(outfile, indent);
@@ -358,19 +390,26 @@ exit:
 }
 
   /**
-   *  @fn void emit_enum_items(FILE *outfile, xmlNodePtr node, int indent)
+   *  @fn void emit_enum_items(FILE *outfile,
+   *                           xmlNodePtr node,
+   *                           options *opts,
+   *                           int indent)
    *
    *  @brief emits enum items from @p node and siblings to @p outfile
    *
    *  @param outfile - open FILE * for writing
    *  @param node - xmlNodePtr containing item element
+   *  @param opts - pointer to @a options struct
    *  @param indent - indent level for output
    *
    *  @par Returns
    *  Nothing.
    */
   
-static void emit_enum_items(FILE *outfile, xmlNodePtr node, int indent)
+static void emit_enum_items(FILE *outfile,
+                            xmlNodePtr node,
+                            options *opts,
+                            int indent)
 {
   char *name = NULL;
   char *value = NULL;
@@ -378,7 +417,7 @@ static void emit_enum_items(FILE *outfile, xmlNodePtr node, int indent)
 
   if (!outfile || !node) goto exit;
 
-  switch (option_annotation())
+  switch (option_annotation(opts))
   {
     case annotation_type_doxygen:
       user_annotation = "/**< USER ANNOTATION */";
@@ -423,18 +462,25 @@ exit:
 }
 
   /**
-   *  @fn bool emit_aggregate(FILE *outfile, xmlNodePtr node, int indent)
+   *  @fn bool emit_aggregate(FILE *outfile,
+   *                          xmlNodePtr node,
+   *                          options *opts,
+   *                          int indent)
    *
    *  @brief emits struct or union code from @p node to @p outfile
    *
    *  @param outfile - open FILE * for writing
    *  @param node - xmlNodePtr containing struct or union element
+   *  @param opts - pointer to @a options struct
    *  @param indent - indent level for output
    *
    *  @return true if aggregate emitted, false if not
    */
   
-static bool emit_aggregate(FILE *outfile, xmlNodePtr node, int indent)
+static bool emit_aggregate(FILE *outfile,
+                           xmlNodePtr node,
+                           options *opts,
+                           int indent)
 {
   char *name = NULL;
   bool did_it = false;
@@ -447,7 +493,7 @@ static bool emit_aggregate(FILE *outfile, xmlNodePtr node, int indent)
 
   name = get_attribute(node, "name");
 
-  if (name) emit_aggregate_annotation(outfile, node, name, indent + 1);
+  if (name) emit_aggregate_annotation(outfile, node, opts, name, indent + 1);
 
   emit_indent(outfile, indent);
   if (name)
@@ -460,7 +506,7 @@ static bool emit_aggregate(FILE *outfile, xmlNodePtr node, int indent)
 
   ++indent;
 
-  emit_fields(outfile, node->children, indent);
+  emit_fields(outfile, node->children, opts, indent);
 
   --indent;
 
@@ -478,6 +524,7 @@ exit:
   /**
    *  @fn void emit_aggregate_annotation(FILE *outfile,
    *                                     xmlNodePtr node,
+   *                                     options *opts,
    *                                     const char *name,
    *                                     int indent)
    *
@@ -485,6 +532,7 @@ exit:
    *
    *  @param outfile - open FILE * for writing
    *  @param node - xmlNodePtr containing struct or union element
+   *  @param opts - pointer to @a options struct
    *  @param name - string containing typedef name
    *  @param indent - indent level for output
    *
@@ -494,19 +542,20 @@ exit:
   
 static void emit_aggregate_annotation(FILE *outfile,
                                       xmlNodePtr node,
+                                      options *opts,
                                       const char *name,
                                       int indent)
 {
   if (!outfile || !node || !name) goto exit;
   if (!node->name) goto exit;
 
-  if (!option_annotation()) goto exit;
+  if (!option_annotation(opts)) goto exit;
 
   if (strcmp((char *)node->name, "struct") &&
       strcmp((char *)node->name, "union"))
     goto exit;
 
-  switch (option_annotation())
+  switch (option_annotation(opts))
   {
     case annotation_type_doxygen:
       emit_indent(outfile, indent);
@@ -545,19 +594,26 @@ exit:
 }
 
   /**
-   *  @fn void emit_fields(FILE *outfile, xmlNodePtr node, int indent)
+   *  @fn void emit_fields(FILE *outfile,
+   *                       xmlNodePtr node,
+   *                       options *opts,
+   *                       int indent)
    *
    *  @brief emits struct or union fields from @p node and siblings to @p outfile
    *
    *  @param outfile - open FILE * for writing
    *  @param node - xmlNodePtr containing field element
+   *  @param opts - pointer to @a options struct
    *  @param indent - indent level for output
    *
    *  @par Returns
    *  Nothing.
    */
   
-static void emit_fields(FILE *outfile, xmlNodePtr node, int indent)
+static void emit_fields(FILE *outfile,
+                        xmlNodePtr node,
+                        options *opts,
+                        int indent)
 {
   char *name = NULL;
   xmlNodePtr child = NULL;
@@ -636,13 +692,13 @@ static void emit_fields(FILE *outfile, xmlNodePtr node, int indent)
       else if (type_child)
       {
         if (!strcmp((char *)type_child->name, "enum"))
-          emit_enum(outfile, type_child, indent);
+          emit_enum(outfile, type_child, opts, indent);
         else if (!strcmp((char *)type_child->name, "struct"))
-          emit_aggregate(outfile, type_child, indent);
+          emit_aggregate(outfile, type_child, opts, indent);
         else if (!strcmp((char *)type_child->name, "union"))
-          emit_aggregate(outfile, type_child, indent);
+          emit_aggregate(outfile, type_child, opts, indent);
         else if (!strcmp((char *)type_child->name, "type-reference"))
-          emit_type_reference(outfile, type_child, indent);
+          emit_type_reference(outfile, type_child, opts, indent);
       }
 
       if (name) fputc(' ', outfile);
@@ -665,7 +721,7 @@ static void emit_fields(FILE *outfile, xmlNodePtr node, int indent)
 
       if (bitlen) fprintf(outfile, ":%d", bitlen);
 
-      if ((option_annotation() == annotation_type_doxygen) &&
+      if ((option_annotation(opts) == annotation_type_doxygen) &&
           (!type_child || (type_child && name)))
         fprintf(outfile, ";  /**<  USER ANNOTATION */\n");
       else
@@ -688,19 +744,26 @@ exit:
 }
 
   /**
-   *  @fn void emit_typedef(FILE *outfile, xmlNodePtr node, int indent)
+   *  @fn void emit_typedef(FILE *outfile,
+   *                        xmlNodePtr node,
+   *                        options *opts,
+   *                        int indent)
    *
    *  @brief emits typedefs for enum, struct or union @p node to @p outfile
    *
    *  @param outfile - open FILE * for writing
    *  @param node - xmlNodePtr containing enum, struct or union element
+   *  @param opts - pointer to @a options struct
    *  @param indent - indent level for output
    *
    *  @par Returns
    *  Nothing.
    */
   
-static void emit_typedef(FILE *outfile, xmlNodePtr node, int indent)
+static void emit_typedef(FILE *outfile,
+                         xmlNodePtr node,
+                         options *opts,
+                         int indent)
 {
   char *name = NULL;
   char *array_name = NULL;
@@ -721,22 +784,22 @@ static void emit_typedef(FILE *outfile, xmlNodePtr node, int indent)
   if (!strcmp((char *)node->name, "struct") ||
       !strcmp((char *)node->name, "union"))
   {
-    emit_typedef_annotation(outfile, node, name, indent + 1);
+    emit_typedef_annotation(outfile, node, opts, name, indent + 1);
 
     fprintf(outfile, "typedef %s %s %s;\n", node->name, name, name);
 
     fprintf(outfile, "\n");
 
-    if (option_gen_array())
+    if (option_gen_array(opts))
     {
       array_name = strapp(array_name, name);
       array_name = strapp(array_name, "_array");
-      emit_typedef_annotation(outfile, node, array_name, indent + 1);
+      emit_typedef_annotation(outfile, node, opts, array_name, indent + 1);
       fprintf(outfile, "typedef struct %s %s;\n", array_name, array_name);
       fprintf(outfile, "\n");
     }
 
-    if (option_gen_list())
+    if (option_gen_list(opts))
     {
       list_name = strapp(list_name, name);
       list_name = strapp(list_name, "_list");
@@ -744,11 +807,11 @@ static void emit_typedef(FILE *outfile, xmlNodePtr node, int indent)
       node_name = strapp(node_name, list_name);
       node_name = strapp(node_name, "_node");
 
-      emit_typedef_annotation(outfile, node, node_name, indent + 1);
+      emit_typedef_annotation(outfile, node, opts, node_name, indent + 1);
       fprintf(outfile, "typedef struct %s %s;\n", node_name, node_name);
       fprintf(outfile, "\n");
 
-      emit_typedef_annotation(outfile, node, list_name, indent + 1);
+      emit_typedef_annotation(outfile, node, opts, list_name, indent + 1);
       fprintf(outfile, "typedef struct %s %s;\n", list_name, list_name);
       fprintf(outfile, "\n");
 
@@ -757,7 +820,7 @@ static void emit_typedef(FILE *outfile, xmlNodePtr node, int indent)
       list_name = node_name = NULL;
     }
 
-    if (option_gen_avl())
+    if (option_gen_avl(opts))
     {
       avl_name = strapp(avl_name, name);
       avl_name = strapp(avl_name, "_avl");
@@ -765,15 +828,15 @@ static void emit_typedef(FILE *outfile, xmlNodePtr node, int indent)
       node_name = strapp(node_name, avl_name);
       node_name = strapp(node_name, "_node");
 
-      emit_typedef_annotation(outfile, node, node_name, indent + 1);
+      emit_typedef_annotation(outfile, node, opts, node_name, indent + 1);
       fprintf(outfile, "typedef struct %s %s;\n", node_name, node_name);
       fprintf(outfile, "\n");
 
-      emit_typedef_annotation(outfile, node, avl_name, indent + 1);
+      emit_typedef_annotation(outfile, node, opts, avl_name, indent + 1);
       fprintf(outfile, "typedef struct %s %s;\n", avl_name, avl_name);
       fprintf(outfile, "\n");
 
-      emit_aggregate_avl_typedefs(outfile, node, indent);
+      emit_aggregate_avl_typedefs(outfile, node, opts, indent);
       fprintf(outfile, ";\n");
       fprintf(outfile, "\n");
 
@@ -793,6 +856,7 @@ exit:
   /**
    *  @fn void emit_typedef_annotation(FILE *outfile,
    *                                   xmlNodePtr node,
+   *                                   options *opts,
    *                                   const char *name,
    *                                   int indent)
    *
@@ -800,6 +864,7 @@ exit:
    *
    *  @param outfile - open FILE * for writing
    *  @param node - xmlNodePtr containing enum, struct or union element
+   *  @param opts - pointer to @a options struct
    *  @param name - string containing typedef name
    *  @param indent - indent level for output
    *
@@ -809,19 +874,20 @@ exit:
   
 static void emit_typedef_annotation(FILE *outfile,
                                     xmlNodePtr node,
+                                    options *opts,
                                     const char *name,
                                     int indent)
 {
   if (!outfile || !node || !name) goto exit;
   if (!node->name) goto exit;
 
-  if (!option_annotation()) goto exit;
+  if (!option_annotation(opts)) goto exit;
 
   if (strcmp((char *)node->name, "struct") &&
       strcmp((char *)node->name, "union"))
     goto exit;
 
-  switch (option_annotation())
+  switch (option_annotation(opts))
   {
     case annotation_type_doxygen:
       emit_indent(outfile, indent);
@@ -867,19 +933,26 @@ exit:
 }
 
   /**
-   *  @fn void emit_type_reference(FILE *outfile, xmlNodePtr node, int indent)
+   *  @fn void emit_type_reference(FILE *outfile,
+   *                               xmlNodePtr node,
+   *                               options *opts,
+   *                               int indent)
    *
    *  @brief emits type-reference information in @p node to @p outfile
    *
    *  @param outfile - open FILE * for writing
    *  @param node - xmlNodePtr containing type-reference element
+   *  @param opts - pointer to @a options struct
    *  @param indent - indent level for output
    *
    *  @par Returns
    *  Nothing.
    */
   
-static void emit_type_reference(FILE *outfile, xmlNodePtr node, int indent)
+static void emit_type_reference(FILE *outfile,
+                                xmlNodePtr node,
+                                options *opts,
+                                int indent)
 {
   char *name = NULL;
   char *type = NULL;
@@ -907,7 +980,7 @@ static void emit_type_reference(FILE *outfile, xmlNodePtr node, int indent)
 
   emit_indent(outfile, indent);
 
-  if (option_assume_typedefs())
+  if (option_assume_typedefs(opts))
     fprintf(outfile, "%s", name);
   else
     fprintf(outfile, "%s %s", type, name);
@@ -960,21 +1033,22 @@ static void emit_header_guard_end(FILE *outfile, const char *project_name)
 }
 
   /**
-   *  @fn void emit_header_cpp_compat_start(FILE *outfile)
+   *  @fn void emit_header_cpp_compat_start(FILE *outfile, options *opts)
    *
    *  @brief emits opening C++ compatibility #define to @p outfile
    *
    *  @param outfile - open FILE * for writing
+   *  @param opts - pointer to @a options struct
    *
    *  @par Returns
    *  Nothing.
    */
   
-static void emit_header_cpp_compat_start(FILE *outfile)
+static void emit_header_cpp_compat_start(FILE *outfile, options *opts)
 {
   if (!outfile) return;
 
-  if (option_cpp_compatible())
+  if (option_cpp_compatible(opts))
   {
     fprintf(outfile, "#ifdef __cplusplus\n");
     fprintf(outfile, "extern \"C\" {\n");
@@ -984,21 +1058,22 @@ static void emit_header_cpp_compat_start(FILE *outfile)
 }
 
   /**
-   *  @fn void emit_header_cpp_compat_end(FILE *outfile)
+   *  @fn void emit_header_cpp_compat_end(FILE *outfile, options *opts)
    *
    *  @brief emits closing C++ compatibility #define to @p outfile
    *
    *  @param outfile - open FILE * for writing
+   *  @param opts - pointer to @a options opts
    *
    *  @par Returns
    *  Nothing.
    */
   
-static void emit_header_cpp_compat_end(FILE *outfile)
+static void emit_header_cpp_compat_end(FILE *outfile, options *opts)
 {
   if (!outfile) return;
 
-  if (option_cpp_compatible())
+  if (option_cpp_compatible(opts))
   {
     fprintf(outfile, "#ifdef __cplusplus\n");
     fprintf(outfile, "}\n");
@@ -1008,22 +1083,27 @@ static void emit_header_cpp_compat_end(FILE *outfile)
 }
 
   /**
-   *  @fn void emit_header_annotation(FILE *outfile, const char *file_name)
+   *  @fn void emit_header_annotation(FILE *outfile,
+   *                                  options *opts,
+   *                                  const char *file_name)
    *
    *  @brief emits global header annotation
    *
    *  @param outfile - open FILE * for writing
+   *  @param opts - pointer to @a options struct
    *  @param file_name - string containing output file name
    *
    *  @par Returns
    *  Nothing.
    */
   
-static void emit_header_annotation(FILE *outfile, const char *file_name)
+static void emit_header_annotation(FILE *outfile,
+                                   options *opts,
+                                   const char *file_name)
 {
   if (!outfile || !file_name) goto exit;
 
-  switch (option_annotation())
+  switch (option_annotation(opts))
   {
     case annotation_type_doxygen:
       fprintf(outfile, "/**\n");
@@ -1051,17 +1131,18 @@ exit:
 }
 
   /**
-   *  @fn void emit_header_includes(FILE *outfile)
+   *  @fn void emit_header_includes(FILE *outfile, options *opts)
    *
    *  @brief emits include directives for optional generators
    *
    *  @param outfile - open FILE * for writing
+   *  @param opts - pointer to @a options struct
    *
    *  @par Returns
    *  Nothing.
    */
   
-static void emit_header_includes(FILE *outfile)
+static void emit_header_includes(FILE *outfile, options *opts)
 {
   bool add_newline = false;
   char *incl = NULL;
@@ -1069,17 +1150,17 @@ static void emit_header_includes(FILE *outfile)
   fprintf(outfile, "#include <stdbool.h>\n");
   fprintf(outfile, "#include <stdint.h>\n");
 
-  if (option_gen_list())
+  if (option_gen_list(opts))
     fprintf(outfile, "#include <llist.h>\n");
 
-  if (option_gen_avl())
+  if (option_gen_avl(opts))
     fprintf(outfile, "#include <avl.h>\n");
 
   fprintf(outfile, "\n");
 
-  for (incl = option_get_first_include();
+  for (incl = option_get_first_include(opts);
        incl;
-       incl = option_get_next_include())
+       incl = option_get_next_include(opts))
   {
     add_newline = true;
     fprintf(outfile, "#include \"%s\"\n", incl);
@@ -1091,6 +1172,7 @@ static void emit_header_includes(FILE *outfile)
   /**
    *  @fn void emit_function_prototypes(FILE *outfile,
    *                                    xmlNodePtr node,
+   *                                    options *opts,
    *                                    const char *project_name)
    *
    *  @brief emits utility function prototypes for enum, struct or union in
@@ -1098,6 +1180,7 @@ static void emit_header_includes(FILE *outfile)
    *
    *  @param outfile - open FILE * for writing
    *  @param node - xmlNodePtr containing enum, struct or union element
+   *  @param opts - pointer to @a options struct
    *  @param project_name - string containing project name
    *
    *  @par Returns
@@ -1106,6 +1189,7 @@ static void emit_header_includes(FILE *outfile)
   
 static void emit_function_prototypes(FILE *outfile,
                                      xmlNodePtr node,
+                                     options *opts,
                                      const char *project_name)
 {
   if (!outfile || !node) return;
@@ -1119,9 +1203,9 @@ static void emit_function_prototypes(FILE *outfile,
   if (!strcmp((char *)node->name, "struct") ||
       !strcmp((char *)node->name, "union"))
   {
-    emit_aggregate_array_function_prototypes(outfile, node, project_name);
-    emit_aggregate_list_function_prototypes(outfile, node, project_name);
-    emit_aggregate_avl_function_prototypes(outfile, node, project_name);
+    emit_aggregate_array_function_prototypes(outfile, node, opts, project_name);
+    emit_aggregate_list_function_prototypes(outfile, node, opts, project_name);
+    emit_aggregate_avl_function_prototypes(outfile, node, opts, project_name);
   }
 }
 

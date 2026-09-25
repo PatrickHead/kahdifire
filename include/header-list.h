@@ -29,10 +29,14 @@
 
 #include "common.h"
 
-bool emit_aggregate_list(FILE *outfile, xmlNodePtr node, int indent);
-bool emit_aggregate_list_node(FILE *outfile, xmlNodePtr node, int indent);
+bool emit_aggregate_list(FILE *outfile, xmlNodePtr node, options *opts, int indent);
+bool emit_aggregate_list_node(FILE *outfile,
+                              xmlNodePtr node,
+                              options *opts,
+                              int indent);
 void emit_aggregate_list_function_prototypes(FILE *outfile,
                                              xmlNodePtr node,
+                                             options *opts,
                                              const char *project_name);
 
 #endif //HEADER_LIST_H

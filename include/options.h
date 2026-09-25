@@ -53,6 +53,12 @@ struct options
   bool gen_avl;
   bool gen_readme;
   bool assume_typedefs;
+  annotation_type annotation_type;
+  license_type license_type;
+  char **include_files;
+  unsigned n_include_files;
+  unsigned curr_include_file;
+  bool cpp_compatible;
 };
 
 annotation_type option_annotation(options *opts);
@@ -69,7 +75,7 @@ char *option_makefile_install_dir(options *opts);
 bool option_gen_makefile(options *opts);
 void option_gen_makefile_on(options *opts);
 void option_gen_makefile_off(options *opts);
-void option_set_makefile_options(options *opts, const char *generators);
+void option_set_makefile_options(options *opts, const char *optlist);
 
 bool option_gen_array(options *opts);
 void option_gen_array_on(options *opts);

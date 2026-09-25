@@ -42,10 +42,10 @@
   /*  Module specific function prototypes  */
 
 static void emit_blank(FILE *outfile);
-static void emit_options(FILE *outfile);
-static void emit_install_dir(FILE *outfile);
+void emit_options(FILE *outfile, options *opts);
+void emit_install_dir(FILE *outfile, options *opts);
 static void emit_all(FILE *outfile, const char *project_name);
-static void emit_doxygen(FILE *outfile, const char *project_name);
+void emit_doxygen(FILE *outfile, options *opts, const char *project_name);
 static void emit_library(FILE *outfile, const char *project_name);
 static void emit_object(FILE *outfile, const char *project_name);
 static void emit_clean(FILE *outfile, const char *project_name);
@@ -53,18 +53,19 @@ static void emit_install(FILE *outfile, const char *project_name);
 static void emit_uninstall(FILE *outfile, const char *project_name);
 
 /**
- *  @fn void gen_makefile(xmlDocPtr doc, const char *base_name)
+ *  @fn void gen_makefile(xmlDocPtr doc, options *opts, const char *base_name)
  *
  *  @brief generates makefile from enum, struct and union declarations
  *
  *  @param doc - xmlDocPtr containing declaration metadata
+ *  @param opts - pointer to @a options struct
  *  @param base_name - basic name of project for output files
  *
  *  @par Returns
  *  Nothing.
  */
 
-void gen_makefile(xmlDocPtr doc, const char *base_name)
+void gen_makefile(xmlDocPtr doc, options *opts, const char *base_name)
 {
   xmlNodePtr root;
   FILE *outfile = NULL;
@@ -75,7 +76,7 @@ void gen_makefile(xmlDocPtr doc, const char *base_name)
 
   if (!doc || !base_name) goto exit;
 
-  if (!option_gen_makefile()) goto exit;
+  if (!option_gen_makefile(opts)) goto exit;
 
   root = xmlDocGetRootElement(doc);
   if (!root) goto exit;
@@ -100,12 +101,12 @@ void gen_makefile(xmlDocPtr doc, const char *base_name)
   project_name = get_project_name(base_name);
   if (!project_name) goto exit;
 
-  emit_options(outfile);
-  emit_install_dir(outfile);
+  emit_options(outfile, opts);
+  emit_install_dir(outfile, opts);
   emit_blank(outfile);
   emit_all(outfile, project_name);
   emit_blank(outfile);
-  emit_doxygen(outfile, project_name);
+  emit_doxygen(outfile, opts, project_name);
   emit_library(outfile, project_name);
   emit_blank(outfile);
   emit_object(outfile, project_name);
@@ -142,37 +143,39 @@ void emit_blank(FILE *outfile)
 }
 
 /**
- *  @fn void emit_options(FILE *outfile)
+ *  @fn void emit_options(FILE *outfile, options *opts)
  *
  *  @brief adds 'CC = compiler'
  *         and  'COPTS = compiler options' line to makefile
  *
  *  @param outfile - FILE * open for writing
+ *  @param opts - pointer to @a options struct
  *
  *  @par Returns
  *  Nothing.
  */
 
-void emit_options(FILE *outfile)
+void emit_options(FILE *outfile, options *opts)
 {
-  fprintf(outfile, "CC = %s\n", option_makefile_cc());
-  fprintf(outfile, "COPTS = %s\n", option_makefile_copts());
+  fprintf(outfile, "CC = %s\n", option_makefile_cc(opts));
+  fprintf(outfile, "COPTS = %s\n", option_makefile_copts(opts));
 }
 
 /**
- *  @fn void emit_install_dir(FILE *outfile)
+ *  @fn void emit_install_dir(FILE *outfile, options *opts)
  *
  *  @brief adds 'INSTALL_DIR = /usr/local' type line to makefile
  *
  *  @param outfile - FILE * open for writing
+ *  @param opts - pointer to @a options struct
  *
  *  @par Returns
  *  Nothing.
  */
 
-void emit_install_dir(FILE *outfile)
+void emit_install_dir(FILE *outfile, options *opts)
 {
-  fprintf(outfile, "INSTALL_DIR = %s\n", option_makefile_install_dir());
+  fprintf(outfile, "INSTALL_DIR = %s\n", option_makefile_install_dir(opts));
 }
 
 /**
@@ -193,20 +196,21 @@ void emit_all(FILE *outfile, const char *project_name)
 }
 
 /**
- *  @fn void emit_doxygen(FILE *outfile, const char *project_name)
+ *  @fn void emit_doxygen(FILE *outfile, options *opts, const char *project_name)
  *
  *  @brief adds target rule to create Doxygen documentation
  *
  *  @param outfile - FILE * open for writing
+ *  @param opts - pointer to @a options struct
  *  @param project_name - string containing name of project for rule names
  *
  *  @par Returns
  *  Nothing.
  */
 
-void emit_doxygen(FILE *outfile, const char *project_name)
+void emit_doxygen(FILE *outfile, options *opts, const char *project_name)
 {
-  if (option_annotation() != annotation_type_doxygen) return;
+  if (option_annotation(opts) != annotation_type_doxygen) return;
 
   fprintf(outfile, "doxygen: Doxygen.%s\n", project_name);
 	fprintf(outfile, "\t@echo Creating Doxygen documents\n");

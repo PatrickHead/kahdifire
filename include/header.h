@@ -29,6 +29,6 @@
 
 #include "common.h"
 
-void gen_header(xmlDocPtr doc, const char *base_name);
+void gen_header(xmlDocPtr doc, options *opts, const char *base_name);
 
 #endif //HEADER_H

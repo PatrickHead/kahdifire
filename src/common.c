@@ -84,10 +84,10 @@ int gen_code(const char *file_name, const char *base_name, options *opts)
   doc = parse_xml(xml_buf);
   if (!doc) goto exit;
 
-  gen_header(doc, base_name);
+  gen_header(doc, opts, base_name);
   gen_source(doc, base_name);
-  gen_makefile(doc, base_name);
-  gen_readme(doc, base_name);
+  gen_makefile(doc, opts, base_name);
+  gen_readme(doc, opts, base_name);
   gen_doxygen_configuration(doc, base_name, opts);
 
   retval = 0;

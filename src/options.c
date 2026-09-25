@@ -17,6 +17,7 @@
 
 /**
  *  @file options.h
+ *
  *  @brief tracks code generation options
  */
 
@@ -29,63 +30,76 @@
 #include "options.h"
 
   /**
-   *  @fn annotation_type option_annotation(void)
+   *  @fn annotation_type option_annotation(options *opts)
+   *
    *  @brief  returns annotation type
    *
-   *  @par Parameters
-   *       None.
+   *  @param opts - pointer to @a options struct
    *
    *  @return current @a annotation_type
    */
 
-annotation_type option_annotation(void) { return annotation_get_type(); }
+annotation_type option_annotation(options *opts)
+{
+  return opts ? opts->annotation_type : annotation_type_none;
+}
 
   /**
-   *  @fn void option_set_annotation(const char *type)
+   *  @fn void option_set_annotation(options *opts, const char *type)
+   *
    *  @brief  sets annotation type
    *
+   *  @param  opts - pointer to @a options struct
    *  @param  type - string representation of @a annotation_type
    *
    *  @par Returns
    *       Nothing.
    */
 
-void option_set_annotation(const char *type)
+void option_set_annotation(options *opts, const char *type)
 {
-  annotation_set_type(annotation_string_to_type(type));
+  if (opts) opts->annotation_type = annotation_string_to_type(type);
 }
 
   /**
-   *  @fn license_type option_license(void)
+   *  @fn license_type option_license(options *opts)
+   *
    *  @brief  returns license type
    *
-   *  @par Parameters
-   *       None.
+   *  @param opts - pointer to @a options struct
    *
    *  @return current @a license_type
    */
 
-license_type option_license(void) { return license_get_type(); }
+license_type option_license(options *opts)
+{
+  return opts ? opts->license_type : license_type_none;
+}
 
   /**
-   *  @fn void option_set_license(const char *type)
+   *  @fn void option_set_license(options *opts, const char *type)
+   *
    *  @brief  sets license type
    *
+   *  @param  opts - pointer to @a options struct
    *  @param  type - string representation of @a license_type
    *
    *  @par Returns
    *       Nothing.
    */
 
-void option_set_license(const char *type)
+void option_set_license(options *opts, const char *type)
 {
-  license_set_type(license_string_to_type(type));
+  if (opts) opts->license_type = license_string_to_type(type);
 }
 
   /**
-   *  @fn void option_set_generator_options(const char *generators)
+   *  @fn void option_set_generator_options(options *opts,
+   *                                        const char *generators)
+   *
    *  @brief  turns on optional code generators
    *
+   *  @param  opts - pointer to @a options struct
    *  @param  generators - comma separated list of:
    *                       array
    *                       list
@@ -95,383 +109,418 @@ void option_set_license(const char *type)
    *       Nothing.
    */
 
-void option_set_generator_options(const char *generators)
+void option_set_generator_options(options *opts, const char *generators)
 {
   char *opt = NULL;
 
-  option_gen_array_off();
-  option_gen_list_off();
-  option_gen_avl_off();
+  option_gen_array_off(opts);
+  option_gen_list_off(opts);
+  option_gen_avl_off(opts);
 
   if (!generators) return;
 
   for (opt = strtok((char *)generators, ","); opt; opt = strtok(NULL, ","))
   {
-    if (!strcasecmp(opt, "array")) option_gen_array_on();
-    else if (!strcasecmp(opt, "list")) option_gen_list_on();
-    else if (!strcasecmp(opt, "avl")) option_gen_avl_on();
+    if (!strcasecmp(opt, "array")) option_gen_array_on(opts);
+    else if (!strcasecmp(opt, "list")) option_gen_list_on(opts);
+    else if (!strcasecmp(opt, "avl")) option_gen_avl_on(opts);
   }
 }
 
-static bool _gen_makefile = false;
-static char _makefile_cc[256] = "gcc";
-static char _makefile_copts[256] = "-Wall -O3 -g0";
-static char _makefile_install_dir[256] = "/usr/local";
-
   /**
-   *  @fn char *option_makefile_cc(void)
+   *  @fn char *option_makefile_cc(options *opts)
+   *
    *  @brief  returns makefile CC setting
    *
-   *  @par Parameters
-   *       None.
+   *  @param opts - pointer to @a options struct
    *
    *  @return string with current makefile CC setting
    */
 
-char *option_makefile_cc(void) { return _makefile_cc; }
+char *option_makefile_cc(options *opts)
+{
+  return opts ? opts->makefile_cc : NULL;
+}
 
   /**
-   *  @fn char *option_makefile_copts(void)
+   *  @fn char *option_makefile_copts(options *opts)
+   *
    *  @brief  returns makefile COPTS setting
    *
-   *  @par Parameters
-   *       None.
+   *  @param opts - pointer to @a options struct
    *
    *  @return string with current makefile COPTS setting
    */
 
-char *option_makefile_copts(void) { return _makefile_copts; }
+char *option_makefile_copts(options *opts)
+{
+  return opts ? opts->makefile_copts : NULL;
+}
 
   /**
-   *  @fn char *option_makefile_install_dir(void)
+   *  @fn char *option_makefile_install_dir(options *opts)
+   *
    *  @brief  returns makefile INSTALL_DIR setting
    *
-   *  @par Parameters
-   *       None.
+   *  @param opts - pointer to @a options struct
    *
    *  @return string with current makefile CC setting
    */
 
-char *option_makefile_install_dir(void) { return _makefile_install_dir; }
+char *option_makefile_install_dir(options *opts)
+{
+  return opts ? opts->makefile_install_dir : NULL;
+}
 
   /**
-   *  @fn bool option_gen_makefile(void)
+   *  @fn bool option_gen_makefile(options *opts)
+   *
    *  @brief  returns gen makefile setting
    *
-   *  @par Parameters
-   *       None.
+   *  @param opts - pointer to @a options struct
    *
    *  @return current makefile generation setting
    */
 
-bool option_gen_makefile(void) { return _gen_makefile; }
+bool option_gen_makefile(options *opts)
+{
+  return opts ? opts->gen_makefile : false;
+}
 
   /**
-   *  @fn void option_gen_makefile_on(void)
+   *  @fn void option_gen_makefile_on(options *opts)
+   *
    *  @brief  turns makefile generation on
    *
-   *  @par Parameters
-   *       None.
+   *  @param opts - pointer to @a options struct
    *
    *  @par Returns
    *       Nothing.
    */
 
-void option_gen_makefile_on(void) { _gen_makefile = true; }
+void option_gen_makefile_on(options *opts)
+{
+  if (opts) opts->gen_makefile = true;
+}
 
   /**
-   *  @fn void option_gen_makefile_off(void)
+   *  @fn void option_gen_makefile_off(options *opts)
+   *
    *  @brief  turns makefile generation off
    *
-   *  @par Parameters
-   *       None.
+   *  @param opts - pointer to @a options struct
    *
    *  @par Returns
    *       Nothing.
    */
 
-void option_gen_makefile_off(void) { _gen_makefile = false; }
+void option_gen_makefile_off(options *opts)
+{
+  if (opts) opts->gen_makefile = true;
+}
 
   /**
-   *  @fn void option_set_makefile_options(const char *options);
+   *  @fn void option_set_makefile_options(options *opts, const char *optlist);
+   *
    *  @brief  tracks makefile generator options
    *
-   *  @param  options - comma separated list of:
+   *  @param  opts - pointer to @a options struct
+   *  @param  optlist - comma separated list of:
    *            CC=&lt;compiler&gt;
    *            COPTS=&lt;options&gt;
-   *            INSTALL_DIR=&lt;base directory of installation, ie. '/usr/local'&gt;
+   *            INSTALL_DIR=&lt;base directory of installation&gt;
+   *                            ie.  '/usr/local'
    *
    *  @par Returns
    *       Nothing.
    */
 
-void option_set_makefile_options(const char *options)
+void option_set_makefile_options(options *opts, const char *optlist)
 {
   char *opt = NULL;
   char *val = NULL;
 
-  if (!options) return;
+  if (!opts || !optlist) return;
 
-  for (opt = strtok((char *)options, ","); opt; opt = strtok(NULL, ","))
+  for (opt = strtok((char *)optlist, ","); opt; opt = strtok(NULL, ","))
   {
-    if (!strncasecmp(opt, "CC", 2))
+    val = strchr(opt, '=');
+    if (val)
     {
-      val = strchr(opt, '=');
-      if (val)
-      {
-        ++val;
-        strncpy(_makefile_cc, val, 255);
-      }
-    }
-    else if (!strncasecmp(opt, "COPTS", 5))
-    {
-      val = strchr(opt, '=');
-      if (val)
-      {
-        ++val;
-        strncpy(_makefile_copts, val, 255);
-      }
-    }
-    else if (!strncasecmp(opt, "INSTALL_DIR", 11))
-    {
-      val = strchr(opt, '=');
-      if (val)
-      {
-        ++val;
-        strncpy(_makefile_install_dir, val, 255);
-      }
+      ++val;
+      if (!strncasecmp(opt, "CC", 2))
+          strncpy(opts->makefile_cc, val, 255);
+      else if (!strncasecmp(opt, "COPTS", 5))
+          strncpy(opts->makefile_copts, val, 255);
+      else if (!strncasecmp(opt, "INSTALL_DIR", 11))
+          strncpy(opts->makefile_install_dir, val, 255);
     }
   }
 }
 
-static bool _gen_array = false;
-
   /**
-   *  @fn bool option_gen_array(void)
+   *  @fn bool option_gen_array(options *opts)
+   *
    *  @brief  returns gen array setting
    *
-   *  @par Parameters
-   *       None.
+   *  @param opts - pointer to @a options struct
    *
    *  @return current array generation setting
    */
 
-bool option_gen_array(void) { return _gen_array; }
+bool option_gen_array(options *opts)
+{
+  return opts ? opts->gen_array : false;
+}
 
   /**
-   *  @fn void option_gen_array_on(void)
+   *  @fn void option_gen_array_on(options *opts)
+   *
    *  @brief  turns array generation on
    *
-   *  @par Parameters
-   *       None.
+   *  @param opts - pointer to @a options struct
    *
    *  @par Returns
    *       Nothing.
    */
 
-void option_gen_array_on(void) { _gen_array = true; }
+void option_gen_array_on(options *opts)
+{
+  if (opts) opts->gen_array = true;
+}
 
   /**
-   *  @fn void option_gen_array_off(void)
+   *  @fn void option_gen_array_off(options *opts)
+   *
    *  @brief  turns array generation off
    *
-   *  @par Parameters
-   *       None.
+   *  @param opts - pointer to @a options struct
    *
    *  @par Returns
    *       Nothing.
    */
 
-void option_gen_array_off(void) { _gen_array = false; }
-
-static bool _gen_list = false;
+void option_gen_array_off(options *opts)
+{
+  if (opts) opts->gen_array = false;
+}
 
   /**
-   *  @fn bool option_gen_list(void)
+   *  @fn bool option_gen_list(options *opts)
+   *
    *  @brief  returns gen list setting
    *
-   *  @par Parameters
-   *       None.
+   *  @param opts - pointer to @a options struct
    *
    *  @return current list generation setting
    */
 
-bool option_gen_list(void) { return _gen_list; }
+bool option_gen_list(options *opts)
+{
+  return opts ? opts->gen_list : false;
+}
 
   /**
-   *  @fn void option_gen_list_on(void)
+   *  @fn void option_gen_list_on(options *opts)
+   *
    *  @brief  turns list generation on
    *
-   *  @par Parameters
-   *       None.
+   *  @param opts - pointer to @a options struct
    *
    *  @par Returns
    *       Nothing.
    */
 
-void option_gen_list_on(void) { _gen_list = true; }
+void option_gen_list_on(options *opts)
+{
+  if (opts) opts->gen_list = true;
+}
 
   /**
-   *  @fn void option_gen_list_off(void)
+   *  @fn void option_gen_list_off(options *opts)
+   *
    *  @brief  turns list generation off
    *
-   *  @par Parameters
-   *       None.
+   *  @param opts - pointer to @a options struct
    *
    *  @par Returns
    *       Nothing.
    */
 
-void option_gen_list_off(void) { _gen_list = false; }
-
-static bool _gen_avl = false;
+void option_gen_list_off(options *opts)
+{
+  if (opts) opts->gen_list = false;
+}
 
   /**
-   *  @fn bool option_gen_avl(void)
+   *  @fn bool option_gen_avl(options *opts)
+   *
    *  @brief  returns gen avl setting
    *
-   *  @par Parameters
-   *       None.
+   *  @param opts - pointer to @a options struct
    *
    *  @return current avl generation setting
    */
 
-bool option_gen_avl(void) { return _gen_avl; }
+bool option_gen_avl(options *opts)
+{
+  return opts ? opts->gen_avl : false;
+}
 
   /**
-   *  @fn void option_gen_avl_on(void)
+   *  @fn void option_gen_avl_on(options *opts)
+   *
    *  @brief  turns avl generation on
    *
-   *  @par Parameters
-   *       None.
+   *  @param opts - pointer to @a options struct
    *
    *  @par Returns
    *       Nothing.
    */
 
-void option_gen_avl_on(void) { _gen_avl = true; }
+void option_gen_avl_on(options *opts)
+{
+  if (opts) opts->gen_avl = true;
+}
 
   /**
-   *  @fn void option_gen_avl_off(void)
+   *  @fn void option_gen_avl_off(options *opts)
+   *
    *  @brief  turns avl generation off
    *
-   *  @par Parameters
-   *       None.
+   *  @param opts - pointer to @a options struct
    *
    *  @par Returns
    *       Nothing.
    */
 
-void option_gen_avl_off(void) { _gen_avl = false; }
-
-static bool _gen_readme = false;
+void option_gen_avl_off(options *opts)
+{
+  if (opts) opts->gen_avl = false;
+}
 
   /**
-   *  @fn bool option_gen_readme(void)
+   *  @fn bool option_gen_readme(options *opts)
+   *
    *  @brief  returns gen readme setting
    *
-   *  @par Parameters
-   *       None.
+   *  @param opts - pointer to @a options struct
    *
    *  @return current readme generation setting
    */
 
-bool option_gen_readme(void) { return _gen_readme; }
+bool option_gen_readme(options *opts)
+{
+  return opts ? opts->gen_readme : false;
+}
 
   /**
-   *  @fn void option_gen_readme_on(void)
+   *  @fn void option_gen_readme_on(options *opts)
+   *
    *  @brief  turns readme generation on
    *
-   *  @par Parameters
-   *       None.
+   *  @param opts - pointer to @a options struct
    *
    *  @par Returns
    *       Nothing.
    */
 
-void option_gen_readme_on(void) { _gen_readme = true; }
+void option_gen_readme_on(options *opts)
+{
+  if (opts) opts->gen_readme = true;
+}
 
   /**
-   *  @fn void option_gen_readme_off(void)
+   *  @fn void option_gen_readme_off(options *opts)
+   *
    *  @brief  turns readme generation off
    *
-   *  @par Parameters
-   *       None.
+   *  @param opts - pointer to @a options struct
    *
    *  @par Returns
    *       Nothing.
    */
 
-void option_gen_readme_off(void) { _gen_readme = false; }
-
-static bool _assume_typedefs = false;
+void option_gen_readme_off(options *opts)
+{
+  if (opts) opts->gen_readme = false;
+}
 
   /**
-   *  @fn bool option_assume_typedefs(void)
+   *  @fn bool option_assume_typedefs(options *opts)
+   *
    *  @brief  returns gen readme setting
    *
-   *  @par Parameters
-   *       None.
+   *  @param opts - pointer to @a options struct
    *
    *  @return current readme generation setting
    */
 
-bool option_assume_typedefs(void) { return _assume_typedefs; }
+bool option_assume_typedefs(options *opts)
+{
+  return opts ? opts->assume_typedefs : false;
+}
 
   /**
-   *  @fn void option_assume_typedefs_on(void)
+   *  @fn void option_assume_typedefs_on(options *opts)
+   *
    *  @brief  turns readme generation on
    *
-   *  @par Parameters
-   *       None.
+   *  @param opts - pointer to @a options struct
    *
    *  @par Returns
    *       Nothing.
    */
 
-void option_assume_typedefs_on(void) { _assume_typedefs = true; }
+void option_assume_typedefs_on(options *opts)
+{
+  if (opts) opts->assume_typedefs = true;
+}
 
   /**
-   *  @fn void option_assume_typedefs_off(void)
+   *  @fn void option_assume_typedefs_off(options *opts)
+   *
    *  @brief  turns readme generation off
    *
-   *  @par Parameters
-   *       None.
+   *  @param opts - pointer to @a options struct
    *
    *  @par Returns
    *       Nothing.
    */
 
-void option_assume_typedefs_off(void) { _assume_typedefs = false; }
-
-char **_include_files = NULL;
-unsigned _n_include_files = 0;
-unsigned _curr_include_file = 0;
+void option_assume_typedefs_off(options *opts)
+{
+  if (opts) opts->assume_typedefs = false;
+}
 
   /**
-   *  @fn void option_set_includes(const char *inc_list);
+   *  @fn void option_set_includes(options *opts, const char *inc_list);
+   *
    *  @brief  sets list of include files to be emitted in header
    *
+   *  @param opts - pointer to @a options struct
    *  @param inc_list - ':' separated list of include file names
    *
    *  @par Returns
    *       Nothing.
    */
 
-void option_set_includes(const char *inc_list)
+void option_set_includes(options *opts, const char *inc_list)
 {
   char *fn;
   char *fn_end;
   int n_fns = 0;
   int i;
 
-  if (_n_include_files)
+  if (!opts) goto exit;
+
+  if (opts->n_include_files)
   {
-    for (i = 0; i < _n_include_files; i++)
-      free(_include_files[i]);
-    free(_include_files);
-    _include_files = NULL;
-    _n_include_files = 0;
+    for (i = 0; i < opts->n_include_files; i++)
+      free(opts->include_files[i]);
+    free(opts->include_files);
+    opts->include_files = NULL;
+    opts->n_include_files = 0;
   }
 
   if (!inc_list) goto exit;
@@ -485,15 +534,15 @@ void option_set_includes(const char *inc_list)
     ++fn;
   }
 
-  _include_files = malloc(sizeof(char *) * (n_fns + 1));
-  if (!_include_files) goto exit;
-  _n_include_files = n_fns;
-  memset(_include_files, 0, sizeof(char *) * (n_fns + 1));
+  opts->include_files = malloc(sizeof(char *) * (n_fns + 1));
+  if (!opts->include_files) goto exit;
+  opts->n_include_files = n_fns;
+  memset(opts->include_files, 0, sizeof(char *) * (n_fns + 1));
 
   for (fn = fn_end = (char *)inc_list, i = 0; i < n_fns; i++)
   {
     while (*fn_end && (*fn_end != ':')) ++fn_end;
-    _include_files[i] = strndup(fn, fn_end - fn);
+    opts->include_files[i] = strndup(fn, fn_end - fn);
     if (*fn_end == ':') ++fn_end;
     fn = fn_end;
   }
@@ -503,75 +552,88 @@ exit:
 }
 
   /**
-   *  @fn char *option_get_first_include(void);
+   *  @fn char *option_get_first_include(options *opts);
+   *
    *  @brief  returns first include file in list
    *
-   *  @par Parameters
-   *       None.
+   *  @param opts - pointer to @a options struct
    *
    *  @return string containing include file name
    */
 
-char *option_get_first_include(void)
+char *option_get_first_include(options *opts)
 {
-  if (!_n_include_files) return NULL;
-  return _include_files[_curr_include_file++];
+  if (!opts) return NULL;
+  if (!opts->n_include_files) return NULL;
+
+  opts->curr_include_file = 0;
+
+  return opts->include_files[opts->curr_include_file];
 }
 
   /**
-   *  @fn char *option_get_next_include(void);
+   *  @fn char *option_get_next_include(options *opts);
+   *
    *  @brief  returns next include file in list
    *
-   *  @par Parameters
-   *       None.
+   *  @param opts - pointer to @a options struct
    *
    *  @return string containing include file name
    */
 
-char *option_get_next_include(void)
+char *option_get_next_include(options *opts)
 {
-  if (_curr_include_file >= _n_include_files) return NULL;
-  if (!_include_files[_curr_include_file]) return NULL;
-  return _include_files[_curr_include_file++];
+  if (!opts) return NULL;
+  if (opts->curr_include_file >= opts->n_include_files) return NULL;
+  if (!opts->include_files[opts->curr_include_file]) return NULL;
+
+  return opts->include_files[opts->curr_include_file++];
 }
 
-bool _cpp_compatible = false;
-
   /**
-   *  @fn bool option_cpp_compatible(void)
+   *  @fn bool option_cpp_compatible(options *opts)
+   *
    *  @brief  returns cpp compatible setting
    *
-   *  @par Parameters
-   *       None.
+   *  @param opts - pointer to @a options struct
    *
    *  @return current cpp compatible setting
    */
 
-bool option_cpp_compatible(void) { return _cpp_compatible; }
+bool option_cpp_compatible(options *opts)
+{
+  return opts ? opts->cpp_compatible : false;
+}
 
   /**
-   *  @fn void option_cpp_compatible_on(void)
+   *  @fn void option_cpp_compatible_on(options *opts)
+   *
    *  @brief  turns cpp compatibility on
    *
-   *  @par Parameters
-   *       None.
+   *  @param opts - pointer to @a options struct
    *
    *  @par Returns
    *       Nothing.
    */
 
-void option_cpp_compatible_on(void) { _cpp_compatible = true; }
+void option_cpp_compatible_on(options *opts)
+{
+  if (opts) opts->cpp_compatible = true;
+}
 
   /**
-   *  @fn void option_cpp_compatible_off(void)
+   *  @fn void option_cpp_compatible_off(options *opts)
+   *
    *  @brief  turns cpp compatibility off
    *
-   *  @par Parameters
-   *       None.
+   *  @param opts - pointer to @a options struct
    *
    *  @par Returns
    *       Nothing.
    */
 
-void option_cpp_compatible_off(void) { _cpp_compatible = false; }
+void option_cpp_compatible_off(options *opts)
+{
+  if (opts) opts->cpp_compatible = false;
+}
 

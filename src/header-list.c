@@ -33,29 +33,36 @@
 
 static void emit_aggregate_list_node_annotation(FILE *outfile,
                                                 xmlNodePtr node,
+                                                options *opts,
                                                 const char *aggregate_name,
                                                 const char *node_name,
                                                 int indent);
+
 static void emit_aggregate_list_annotation(FILE *outfile,
                                            xmlNodePtr node,
+                                           options *opts,
                                            const char *aggregate_name,
                                            const char *list_name,
                                            int indent);
 
   /**
-   *  @fn void emit_aggregate_list(FILE *outfile, xmlNodePtr node, int indent)
+   *  @fn void emit_aggregate_list(FILE *outfile,
+   *                               xmlNodePtr node,
+   *                               options *opts,
+   *                               int indent)
    *
    *  @brief emits list struct for struct or union from @p node to @p outfile
    *
    *  @param outfile - open FILE * for writing
    *  @param node - xmlNodePtr containing struct or union element
+   *  @param opts - pointer to @a options struct
    *  @param indent - indent level for output
    *
    *  @par Returns
    *  Nothing.
    */
   
-bool emit_aggregate_list(FILE *outfile, xmlNodePtr node, int indent)
+bool emit_aggregate_list(FILE *outfile, xmlNodePtr node, options *opts, int indent)
 {
   char *name = NULL;
   char *list_name = NULL;
@@ -63,7 +70,7 @@ bool emit_aggregate_list(FILE *outfile, xmlNodePtr node, int indent)
   int is_doxygen = 0;
   bool did_it = false;
 
-  if (!option_gen_list()) goto exit;
+  if (!option_gen_list(opts)) goto exit;
 
   if (!outfile || !node) goto exit;
 
@@ -71,7 +78,7 @@ bool emit_aggregate_list(FILE *outfile, xmlNodePtr node, int indent)
       strcmp((char *)node->name, "union"))
     goto exit;
 
-  switch (option_annotation())
+  switch (option_annotation(opts))
   {
     case annotation_type_doxygen: is_doxygen = 1; break;
     default: is_doxygen = 0; break;
@@ -83,7 +90,7 @@ bool emit_aggregate_list(FILE *outfile, xmlNodePtr node, int indent)
   list_name = strapp(list_name, name);
   list_name = strapp(list_name, "_list");
 
-  emit_aggregate_list_annotation(outfile, node, name, list_name, indent + 1);
+  emit_aggregate_list_annotation(outfile, node, opts, name, list_name, indent + 1);
 
   emit_indent(outfile, indent);
   fprintf(outfile, "struct %s\n", list_name ? list_name : "!!ERROR!!");
@@ -121,6 +128,7 @@ exit:
   /**
    *  @fn bool emit_aggregate_list_node(FILE *outfile,
    *                                    xmlNodePtr node,
+   *                                    options *opts,
    *                                    int indent)
    *
    *  @brief emits list node struct for struct or union from @p node to
@@ -128,12 +136,16 @@ exit:
    *
    *  @param outfile - open FILE * for writing
    *  @param node - xmlNodePtr containing struct or union element
+   *  @param opts - pointer to @a options struct
    *  @param indent - indent level for output
    *
    *  @return true if emitted, false otherwise
    */
   
-bool emit_aggregate_list_node(FILE *outfile, xmlNodePtr node, int indent)
+bool emit_aggregate_list_node(FILE *outfile,
+                              xmlNodePtr node,
+                              options *opts,
+                              int indent)
 {
   char *name = NULL;
   char *node_name = NULL;
@@ -142,7 +154,7 @@ bool emit_aggregate_list_node(FILE *outfile, xmlNodePtr node, int indent)
   int is_doxygen = 0;
   bool did_it = false;
 
-  if (!option_gen_list()) goto exit;
+  if (!option_gen_list(opts)) goto exit;
 
   if (!outfile || !node) goto exit;
 
@@ -150,7 +162,7 @@ bool emit_aggregate_list_node(FILE *outfile, xmlNodePtr node, int indent)
       strcmp((char *)node->name, "union"))
     goto exit;
 
-  switch (option_annotation())
+  switch (option_annotation(opts))
   {
     case annotation_type_doxygen: is_doxygen = 1; break;
     default: is_doxygen = 0; break;
@@ -170,6 +182,7 @@ bool emit_aggregate_list_node(FILE *outfile, xmlNodePtr node, int indent)
 
   emit_aggregate_list_node_annotation(outfile,
                                       node,
+                                      opts,
                                       name,
                                       node_name,
                                       indent + 1);
@@ -227,6 +240,7 @@ exit:
   /**
    *  @fn void emit_aggregate_list_function_prototypes(FILE *outfile,
    *                                                   xmlNodePtr node,
+   *                                                   options *opts,
    *                                                   const char *project_name)
    *
    *  @brief emits utility list function prototypes for struct or union in
@@ -234,6 +248,7 @@ exit:
    *
    *  @param outfile - open FILE * for writing
    *  @param node - xmlNodePtr containing struct or union element
+   *  @param opts - pointer to @a options struct
    *  @param project_name - string containing project name
    *
    *  @par Returns
@@ -242,6 +257,7 @@ exit:
   
 void emit_aggregate_list_function_prototypes(FILE *outfile,
                                              xmlNodePtr node,
+                                             options *opts,
                                              const char *project_name)
 {
   char *name = NULL;
@@ -249,7 +265,7 @@ void emit_aggregate_list_function_prototypes(FILE *outfile,
   char *list_name = NULL;
   char *function_prefix = NULL;
 
-  if (!option_gen_list()) goto exit;
+  if (!option_gen_list(opts)) goto exit;
 
   if (!outfile || !node) goto exit;
 
@@ -389,6 +405,7 @@ exit:
   /**
    *  @fn void emit_aggregate_list_node_annotation(FILE *outfile,
    *                                               xmlNodePtr node,
+   *                                               options *opts,
    *                                               const char *aggregate_name,
    *                                               const char *list_name,
    *                                               int indent)
@@ -397,6 +414,7 @@ exit:
    *
    *  @param outfile - open FILE * for writing
    *  @param node - xmlNodePtr containing struct or union element
+   *  @param opts - pointer to @a options struct
    *  @param aggregate_name - string containing typedef name of base aggregate
    *  @param list_name - string containing typedef list
    *  @param indent - indent level for output
@@ -407,6 +425,7 @@ exit:
   
 static void emit_aggregate_list_node_annotation(FILE *outfile,
                                                 xmlNodePtr node,
+                                                options *opts,
                                                 const char *aggregate_name,
                                                 const char *node_name,
                                                 int indent)
@@ -414,13 +433,13 @@ static void emit_aggregate_list_node_annotation(FILE *outfile,
   if (!outfile || !node || !aggregate_name || !node_name) goto exit;
   if (!node->name) goto exit;
 
-  if (!option_annotation()) goto exit;
+  if (!option_annotation(opts)) goto exit;
 
   if (strcmp((char *)node->name, "struct") &&
       strcmp((char *)node->name, "union"))
     goto exit;
 
-  switch (option_annotation())
+  switch (option_annotation(opts))
   {
     case annotation_type_doxygen:
       emit_indent(outfile, indent);
@@ -468,6 +487,7 @@ exit:
   /**
    *  @fn void emit_aggregate_list_annotation(FILE *outfile,
    *                                          xmlNodePtr node,
+   *                                          options *opts,
    *                                          const char *aggregate_name,
    *                                          const char *list_name,
    *                                          int indent)
@@ -476,6 +496,7 @@ exit:
    *
    *  @param outfile - open FILE * for writing
    *  @param node - xmlNodePtr containing struct or union element
+   *  @param opts - pointer to @a options struct
    *  @param aggregate_name - string containing typedef name of base aggregate
    *  @param list_name - string containing typedef list
    *  @param indent - indent level for output
@@ -486,6 +507,7 @@ exit:
   
 static void emit_aggregate_list_annotation(FILE *outfile,
                                            xmlNodePtr node,
+                                           options *opts,
                                            const char *aggregate_name,
                                            const char *list_name,
                                            int indent)
@@ -493,13 +515,13 @@ static void emit_aggregate_list_annotation(FILE *outfile,
   if (!outfile || !node || !aggregate_name || !list_name) goto exit;
   if (!node->name) goto exit;
 
-  if (!option_annotation()) goto exit;
+  if (!option_annotation(opts)) goto exit;
 
   if (strcmp((char *)node->name, "struct") &&
       strcmp((char *)node->name, "union"))
     goto exit;
 
-  switch (option_annotation())
+  switch (option_annotation(opts))
   {
     case annotation_type_doxygen:
       emit_indent(outfile, indent);

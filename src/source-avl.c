@@ -33,101 +33,122 @@
 
 static void emit_aggregate_avl_new_function(FILE *outfile,
                                             xmlNodePtr node,
+                                            options *opts,
                                             const char *project,
                                             int indent);
 static void emit_aggregate_avl_dup_function(FILE *outfile,
                                             xmlNodePtr node,
+                                            options *opts,
                                             const char *project,
                                             int indent);
 static void emit_aggregate_avl_free_function(FILE *outfile,
                                              xmlNodePtr node,
+                                             options *opts,
                                              const char *project,
                                              int indent);
 static void emit_aggregate_avl_insert_function(FILE *outfile,
                                                xmlNodePtr node,
+                                               options *opts,
                                                const char *project,
                                                int indent);
 static void emit_aggregate_avl_delete_function(FILE *outfile,
                                                xmlNodePtr node,
+                                               options *opts,
                                                const char *project,
                                                int indent);
 static void emit_aggregate_avl_find_function(FILE *outfile,
                                              xmlNodePtr node,
+                                             options *opts,
                                              const char *project,
                                              int indent);
 static void emit_aggregate_avl_walk_function(FILE *outfile,
                                              xmlNodePtr node,
+                                             options *opts,
                                              const char *project,
                                              int indent);
 static void emit_aggregate_avl_new_node_function(FILE *outfile,
                                                  xmlNodePtr node,
+                                                 options *opts,
                                                  const char *project,
                                                  int indent);
 static void emit_aggregate_avl_dup_node_function(FILE *outfile,
                                                  xmlNodePtr node,
+                                                 options *opts,
                                                  const char *project,
                                                  int indent);
 static void emit_aggregate_avl_free_node_function(FILE *outfile,
                                                   xmlNodePtr node,
+                                                  options *opts,
                                                   const char *project,
                                                   int indent);
 static void emit_aggregate_avl_cmp_node_function(FILE *outfile,
                                                  xmlNodePtr node,
+                                                 options *opts,
                                                  const char *project,
                                                  int indent);
-
 static void emit_aggregate_avl_new_annotation(FILE *outfile,
                                               xmlNodePtr node,
+                                              options *opts,
                                               const char *aggregate_name,
                                               const char *function_prefix,
                                               int indent);
 static void emit_aggregate_avl_dup_annotation(FILE *outfile,
                                               xmlNodePtr node,
+                                              options *opts,
                                               const char *aggregate_name,
                                               const char *function_prefix,
                                               int indent);
 static void emit_aggregate_avl_free_annotation(FILE *outfile,
                                                xmlNodePtr node,
+                                               options *opts,
                                                const char *aggregate_name,
                                                const char *function_prefix,
                                                int indent);
 static void emit_aggregate_avl_insert_annotation(FILE *outfile,
                                                  xmlNodePtr node,
+                                                 options *opts,
                                                  const char *aggregate_name,
                                                  const char *function_prefix,
                                                  int indent);
 static void emit_aggregate_avl_delete_annotation(FILE *outfile,
                                                  xmlNodePtr node,
+                                                 options *opts,
                                                  const char *aggregate_name,
                                                  const char *function_prefix,
                                                  int indent);
 static void emit_aggregate_avl_find_annotation(FILE *outfile,
                                                xmlNodePtr node,
+                                               options *opts,
                                                const char *aggregate_name,
                                                const char *function_prefix,
                                                int indent);
 static void emit_aggregate_avl_walk_annotation(FILE *outfile,
                                                xmlNodePtr node,
+                                               options *opts,
                                                const char *aggregate_name,
                                                const char *function_prefix,
                                                int indent);
 static void emit_aggregate_avl_new_node_annotation(FILE *outfile,
                                                    xmlNodePtr node,
+                                                   options *opts,
                                                    const char *aggregate_name,
                                                    const char *function_prefix,
                                                    int indent);
 static void emit_aggregate_avl_dup_node_annotation(FILE *outfile,
                                                    xmlNodePtr node,
+                                                   options *opts,
                                                    const char *aggregate_name,
                                                    const char *function_prefix,
                                                    int indent);
 static void emit_aggregate_avl_free_node_annotation(FILE *outfile,
-                                                    xmlNodePtr node,
-                                                    const char *aggregate_name,
-                                                    const char *function_prefix,
-                                                    int indent);
+                                                   xmlNodePtr node,
+                                                   options *opts,
+                                                   const char *aggregate_name,
+                                                   const char *function_prefix,
+                                                   int indent);
 static void emit_aggregate_avl_cmp_node_annotation(FILE *outfile,
                                                    xmlNodePtr node,
+                                                   options *opts,
                                                    const char *aggregate_name,
                                                    const char *function_prefix,
                                                    int indent);
@@ -135,6 +156,7 @@ static void emit_aggregate_avl_cmp_node_annotation(FILE *outfile,
   /**
    *  @fn void emit_aggregate_avl_functions(FILE *outfile,
    *                                          xmlNodePtr node,
+   *                                          options *opts,
    *                                          const char *project_name)
    *
    *  @brief generates avl C source code from struct or union element in
@@ -142,6 +164,7 @@ static void emit_aggregate_avl_cmp_node_annotation(FILE *outfile,
    *
    *  @param outfile - open FILE * for writing
    *  @param node - xmlNodePtr containing struct or union element
+   *  @param opts - pointer to @a options struct
    *  @param project_name - string containing project name
    *
    *  @par Returns
@@ -150,13 +173,14 @@ static void emit_aggregate_avl_cmp_node_annotation(FILE *outfile,
   
 void emit_aggregate_avl_functions(FILE *outfile,
                                     xmlNodePtr node,
+                                    options *opts,
                                     const char *project_name)
 {
   char *project = NULL;
   char *name = NULL;
   int indent = 0;
 
-  if (!option_gen_avl()) goto exit;
+  if (!option_gen_avl(opts)) goto exit;
 
   if (!outfile || !node || !project_name) goto exit;
 
@@ -184,17 +208,17 @@ void emit_aggregate_avl_functions(FILE *outfile,
 
   fprintf(outfile, "\n");
 
-  emit_aggregate_avl_new_function(outfile, node, project, indent);
-  emit_aggregate_avl_dup_function(outfile, node, project, indent);
-  emit_aggregate_avl_free_function(outfile, node, project, indent);
-  emit_aggregate_avl_insert_function(outfile, node, project, indent);
-  emit_aggregate_avl_delete_function(outfile, node, project, indent);
-  emit_aggregate_avl_find_function(outfile, node, project, indent);
-  emit_aggregate_avl_walk_function(outfile, node, project, indent);
-  emit_aggregate_avl_new_node_function(outfile, node, project, indent);
-  emit_aggregate_avl_dup_node_function(outfile, node, project, indent);
-  emit_aggregate_avl_free_node_function(outfile, node, project, indent);
-  emit_aggregate_avl_cmp_node_function(outfile, node, project, indent);
+  emit_aggregate_avl_new_function(outfile, node, opts, project, indent);
+  emit_aggregate_avl_dup_function(outfile, node, opts, project, indent);
+  emit_aggregate_avl_free_function(outfile, node, opts, project, indent);
+  emit_aggregate_avl_insert_function(outfile, node, opts, project, indent);
+  emit_aggregate_avl_delete_function(outfile, node, opts, project, indent);
+  emit_aggregate_avl_find_function(outfile, node, opts, project, indent);
+  emit_aggregate_avl_walk_function(outfile, node, opts, project, indent);
+  emit_aggregate_avl_new_node_function(outfile, node, opts, project, indent);
+  emit_aggregate_avl_dup_node_function(outfile, node, opts, project, indent);
+  emit_aggregate_avl_free_node_function(outfile, node, opts, project, indent);
+  emit_aggregate_avl_cmp_node_function(outfile, node, opts, project, indent);
 
 exit:
   free(project);
@@ -206,6 +230,7 @@ exit:
   /**
    *  @fn void emit_aggregate_avl_new_function(FILE *outfile,
    *                                           xmlNodePtr node,
+   *                                           options *opts,
    *                                           const char *project,
    *                                           int indent)
    *
@@ -214,6 +239,7 @@ exit:
    *
    *  @param outfile - open FILE * for writing
    *  @param node - xmlNodePtr containing struct or union element
+   *  @param opts - pointer to @a options struct
    *  @param project - string containing project name
    *  @param indent - indent level for output
    *
@@ -223,6 +249,7 @@ exit:
   
 static void emit_aggregate_avl_new_function(FILE *outfile,
                                             xmlNodePtr node,
+                                            options *opts,
                                             const char *project,
                                             int indent)
 {
@@ -247,7 +274,12 @@ static void emit_aggregate_avl_new_function(FILE *outfile,
 
   fpre2 = function_prefix(project, name);
 
-  emit_aggregate_avl_new_annotation(outfile, node, name, fpre2, indent + 1);
+  emit_aggregate_avl_new_annotation(outfile,
+                                    node,
+                                    opts,
+                                    name,
+                                    fpre2,
+                                    indent + 1);
 
   fprintf(outfile,
           "%s *%s_new(void)\n",
@@ -342,6 +374,7 @@ exit:
   /**
    *  @fn void emit_aggregate_avl_dup_function(FILE *outfile,
    *                                           xmlNodePtr node,
+   *                                           options *opts,
    *                                           const char *project,
    *                                           int indent)
    *
@@ -350,6 +383,7 @@ exit:
    *
    *  @param outfile - open FILE * for writing
    *  @param node - xmlNodePtr containing struct or union element
+   *  @param opts - pointer to @a options struct
    *  @param project - string containing project name
    *  @param indent - indent level for output
    *
@@ -359,6 +393,7 @@ exit:
   
 static void emit_aggregate_avl_dup_function(FILE *outfile,
                                             xmlNodePtr node,
+                                            options *opts,
                                             const char *project,
                                             int indent)
 {
@@ -383,7 +418,12 @@ static void emit_aggregate_avl_dup_function(FILE *outfile,
 
   fpre2 = function_prefix(project, name);
 
-  emit_aggregate_avl_dup_annotation(outfile, node, name, fpre2, indent + 1);
+  emit_aggregate_avl_dup_annotation(outfile,
+                                    node,
+                                    opts,
+                                    name,
+                                    fpre2,
+                                    indent + 1);
 
   fprintf(outfile, "%s *%s_dup(%s *instance)\n",
                    avl_name,
@@ -442,6 +482,7 @@ exit:
   /**
    *  @fn void emit_aggregate_avl_free_function(FILE *outfile,
    *                                            xmlNodePtr node,
+   *                                            options *opts,
    *                                            const char *project,
    *                                            int indent)
    *
@@ -449,6 +490,7 @@ exit:
    *
    *  @param outfile - open FILE * for writing
    *  @param node - xmlNodePtr containing struct or union element
+   *  @param opts - pointer to @a options struct
    *  @param project - string containing project name
    *  @param indent - indent level for output
    *
@@ -458,6 +500,7 @@ exit:
   
 static void emit_aggregate_avl_free_function(FILE *outfile,
                                              xmlNodePtr node,
+                                             options *opts,
                                              const char *project,
                                              int indent)
 {
@@ -484,6 +527,7 @@ static void emit_aggregate_avl_free_function(FILE *outfile,
 
   emit_aggregate_avl_free_annotation(outfile,
                                        node,
+                                       opts,
                                        avl_name,
                                        fpre2,
                                        indent + 1);
@@ -529,6 +573,7 @@ exit:
   /**
    *  @fn void emit_aggregate_avl_insert_function(FILE *outfile,
    *                                              xmlNodePtr node,
+   *                                              options *opts,
    *                                              const char *project,
    *                                              int indent)
    *
@@ -537,6 +582,7 @@ exit:
    *
    *  @param outfile - open FILE * for writing
    *  @param node - xmlNodePtr containing struct or union element
+   *  @param opts - pointer to @a options struct
    *  @param project - string containing project name
    *  @param indent - indent level for output
    *
@@ -546,6 +592,7 @@ exit:
   
 static void emit_aggregate_avl_insert_function(FILE *outfile,
                                                xmlNodePtr node,
+                                               options *opts,
                                                const char *project,
                                                int indent)
 {
@@ -570,7 +617,12 @@ static void emit_aggregate_avl_insert_function(FILE *outfile,
 
   fpre2 = function_prefix(project, name);
 
-  emit_aggregate_avl_insert_annotation(outfile, node, name, fpre2, indent + 1);
+  emit_aggregate_avl_insert_annotation(outfile,
+                                       node,
+                                       opts,
+                                       name,
+                                       fpre2,
+                                       indent + 1);
 
   fprintf(outfile, "void %s_insert(%s *instance, %s *item)\n",
                    fpre,
@@ -606,6 +658,7 @@ exit:
   /**
    *  @fn void emit_aggregate_avl_delete_function(FILE *outfile,
    *                                              xmlNodePtr node,
+   *                                              options *opts,
    *                                              const char *project,
    *                                              int indent)
    *
@@ -614,6 +667,7 @@ exit:
    *
    *  @param outfile - open FILE * for writing
    *  @param node - xmlNodePtr containing struct or union element
+   *  @param opts - pointer to @a options struct
    *  @param project - string containing project name
    *  @param indent - indent level for output
    *
@@ -623,6 +677,7 @@ exit:
   
 static void emit_aggregate_avl_delete_function(FILE *outfile,
                                                xmlNodePtr node,
+                                               options *opts,
                                                const char *project,
                                                int indent)
 {
@@ -647,7 +702,12 @@ static void emit_aggregate_avl_delete_function(FILE *outfile,
 
   fpre2 = function_prefix(project, name);
 
-  emit_aggregate_avl_delete_annotation(outfile, node, name, fpre2, indent + 1);
+  emit_aggregate_avl_delete_annotation(outfile,
+                                       node,
+                                       opts,
+                                       name,
+                                       fpre2,
+                                       indent + 1);
 
   fprintf(outfile, "void %s_delete(%s *instance, %s *target)\n",
                    fpre,
@@ -693,6 +753,7 @@ exit:
   /**
    *  @fn void emit_aggregate_avl_find_function(FILE *outfile,
    *                                            xmlNodePtr node,
+   *                                            options *opts,
    *                                            const char *project,
    *                                            int indent)
    *
@@ -701,6 +762,7 @@ exit:
    *
    *  @param outfile - open FILE * for writing
    *  @param node - xmlNodePtr containing struct or union element
+   *  @param opts - pointer to @a options struct
    *  @param project - string containing project name
    *  @param indent - indent level for output
    *
@@ -710,6 +772,7 @@ exit:
   
 static void emit_aggregate_avl_find_function(FILE *outfile,
                                              xmlNodePtr node,
+                                             options *opts,
                                              const char *project,
                                              int indent)
 {
@@ -734,7 +797,12 @@ static void emit_aggregate_avl_find_function(FILE *outfile,
 
   fpre2 = function_prefix(project, name);
 
-  emit_aggregate_avl_find_annotation(outfile, node, name, fpre2, indent + 1);
+  emit_aggregate_avl_find_annotation(outfile,
+                                     node,
+                                     opts,
+                                     name,
+                                     fpre2,
+                                     indent + 1);
 
   fprintf(outfile, "%s *%s_find(%s *instance, %s *needle)\n",
                    name, 
@@ -784,6 +852,7 @@ exit:
   /**
    *  @fn void emit_aggregate_avl_walk_function(FILE *outfile,
    *                                            xmlNodePtr node,
+   *                                            options *opts,
    *                                            const char *project,
    *                                            int indent)
    *
@@ -792,6 +861,7 @@ exit:
    *
    *  @param outfile - open FILE * for writing
    *  @param node - xmlNodePtr containing struct or union element
+   *  @param opts - pointer to @a options struct
    *  @param project - string containing project name
    *  @param indent - indent level for output
    *
@@ -801,6 +871,7 @@ exit:
   
 static void emit_aggregate_avl_walk_function(FILE *outfile,
                                              xmlNodePtr node,
+                                             options *opts,
                                              const char *project,
                                              int indent)
 {
@@ -825,7 +896,12 @@ static void emit_aggregate_avl_walk_function(FILE *outfile,
 
   fpre2 = function_prefix(project, name);
 
-  emit_aggregate_avl_walk_annotation(outfile, node, name, fpre2, indent + 1);
+  emit_aggregate_avl_walk_annotation(outfile,
+                                     node,
+                                     opts,
+                                     name,
+                                     fpre2,
+                                     indent + 1);
 
   fprintf(outfile, "void %s_walk(%s *instance,\n", fpre, avl_name);
 
@@ -863,6 +939,7 @@ exit:
   /**
    *  @fn void emit_aggregate_avl_new_node_function(FILE *outfile,
    *                                                xmlNodePtr node,
+   *                                                options *opts,
    *                                                const char *project,
    *                                                int indent)
    *
@@ -871,6 +948,7 @@ exit:
    *
    *  @param outfile - open FILE * for writing
    *  @param node - xmlNodePtr containing struct or union element
+   *  @param opts - pointer to @a options struct
    *  @param project - string containing project name
    *  @param indent - indent level for output
    *
@@ -880,6 +958,7 @@ exit:
   
 static void emit_aggregate_avl_new_node_function(FILE *outfile,
                                                  xmlNodePtr node,
+                                                 options *opts,
                                                  const char *project,
                                                  int indent)
 {
@@ -904,7 +983,12 @@ static void emit_aggregate_avl_new_node_function(FILE *outfile,
 
   fpre2 = function_prefix(project, name);
 
-  emit_aggregate_avl_new_node_annotation(outfile, node, name, fpre2, indent + 1);
+  emit_aggregate_avl_new_node_annotation(outfile,
+                                         node,
+                                         opts,
+                                         name,
+                                         fpre2,
+                                         indent + 1);
 
   fprintf(outfile, "%s_node *%s_new_node_func(void)\n", avl_name, fpre);
 
@@ -953,6 +1037,7 @@ exit:
   /**
    *  @fn void emit_aggregate_avl_dup_node_function(FILE *outfile,
    *                                                xmlNodePtr node,
+   *                                                options *opts,
    *                                                const char *project,
    *                                                int indent)
    *
@@ -961,6 +1046,7 @@ exit:
    *
    *  @param outfile - open FILE * for writing
    *  @param node - xmlNodePtr containing struct or union element
+   *  @param opts - pointer to @a options struct
    *  @param project - string containing project name
    *  @param indent - indent level for output
    *
@@ -970,6 +1056,7 @@ exit:
   
 static void emit_aggregate_avl_dup_node_function(FILE *outfile,
                                                  xmlNodePtr node,
+                                                 options *opts,
                                                  const char *project,
                                                  int indent)
 {
@@ -994,7 +1081,12 @@ static void emit_aggregate_avl_dup_node_function(FILE *outfile,
 
   fpre2 = function_prefix(project, name);
 
-  emit_aggregate_avl_dup_node_annotation(outfile, node, name, fpre2, indent + 1);
+  emit_aggregate_avl_dup_node_annotation(outfile,
+                                         node,
+                                         opts,
+                                         name,
+                                         fpre2,
+                                         indent + 1);
 
   fprintf(outfile,
           "%s_node *%s_dup_node_func(%s_node *node)\n",
@@ -1068,6 +1160,7 @@ exit:
   /**
    *  @fn void emit_aggregate_avl_free_node_function(FILE *outfile,
    *                                                 xmlNodePtr node,
+   *                                                 options *opts,
    *                                                 const char *project,
    *                                                 int indent)
    *
@@ -1076,6 +1169,7 @@ exit:
    *
    *  @param outfile - open FILE * for writing
    *  @param node - xmlNodePtr containing struct or union element
+   *  @param opts - pointer to @a options struct
    *  @param project - string containing project name
    *  @param indent - indent level for output
    *
@@ -1085,6 +1179,7 @@ exit:
   
 static void emit_aggregate_avl_free_node_function(FILE *outfile,
                                                   xmlNodePtr node,
+                                                  options *opts,
                                                   const char *project,
                                                   int indent)
 {
@@ -1109,7 +1204,12 @@ static void emit_aggregate_avl_free_node_function(FILE *outfile,
 
   fpre2 = function_prefix(project, name);
 
-  emit_aggregate_avl_free_node_annotation(outfile, node, name, fpre2, indent + 1);
+  emit_aggregate_avl_free_node_annotation(outfile,
+                                          node,
+                                          opts,
+                                          name,
+                                          fpre2,
+                                          indent + 1);
 
   fprintf(outfile, "void %s_free_node_func(%s_node *node)\n", fpre, avl_name);
 
@@ -1154,6 +1254,7 @@ exit:
   /**
    *  @fn void emit_aggregate_avl_cmp_node_function(FILE *outfile,
    *                                                xmlNodePtr node,
+   *                                                options *opts,
    *                                                const char *project,
    *                                                int indent)
    *
@@ -1162,6 +1263,7 @@ exit:
    *
    *  @param outfile - open FILE * for writing
    *  @param node - xmlNodePtr containing struct or union element
+   *  @param opts - pointer to @a options struct
    *  @param project - string containing project name
    *  @param indent - indent level for output
    *
@@ -1171,6 +1273,7 @@ exit:
   
 static void emit_aggregate_avl_cmp_node_function(FILE *outfile,
                                                  xmlNodePtr node,
+                                                 options *opts,
                                                  const char *project,
                                                  int indent)
 {
@@ -1195,7 +1298,12 @@ static void emit_aggregate_avl_cmp_node_function(FILE *outfile,
 
   fpre2 = function_prefix(project, name);
 
-  emit_aggregate_avl_cmp_node_annotation(outfile, node, name, fpre2, indent+1);
+  emit_aggregate_avl_cmp_node_annotation(outfile,
+                                         node,
+                                         opts,
+                                         name,
+                                         fpre2,
+                                         indent+1);
 
   fprintf(outfile,
           "int %s_cmp_node_func(%s_node *a, %s_node *b)\n",
@@ -1254,6 +1362,7 @@ exit:
   /**
    *  @fn void emit_aggregate_avl_new_annotation(FILE *outfile,
    *                                             xmlNodePtr node,
+   *                                             options *opts,
    *                                             const char *aggregate_name,
    *                                             const char *function_prefix,
    *                                             int indent)
@@ -1262,6 +1371,7 @@ exit:
    *
    *  @param outfile - open FILE * for writing
    *  @param node - xmlNodePtr containing struct or union element
+   *  @param opts - pointer to @a options struct
    *  @param aggregate_name - string containing aggregate name
    *  @param function_prefix - string containing leading part of function name
    *  @param indent - indent level for output
@@ -1272,6 +1382,7 @@ exit:
   
 static void emit_aggregate_avl_new_annotation(FILE *outfile,
                                               xmlNodePtr node,
+                                              options *opts,
                                               const char *aggregate_name,
                                               const char *function_prefix,
                                               int indent)
@@ -1279,13 +1390,13 @@ static void emit_aggregate_avl_new_annotation(FILE *outfile,
   if (!outfile || !node || !aggregate_name || !function_prefix) goto exit;
   if (!node->name) goto exit;
 
-  if (!option_annotation()) goto exit;
+  if (!option_annotation(opts)) goto exit;
 
   if (strcmp((char *)node->name, "struct") &&
       strcmp((char *)node->name, "union"))
     goto exit;
 
-  switch (option_annotation())
+  switch (option_annotation(opts))
   {
     case annotation_type_doxygen:
       emit_indent(outfile, indent);
@@ -1380,6 +1491,7 @@ exit:
   /**
    *  @fn void emit_aggregate_avl_dup_annotation(FILE *outfile,
    *                                             xmlNodePtr node,
+   *                                             options *opts,
    *                                             const char *aggregate_name,
    *                                             const char *function_prefix,
    *                                             int indent)
@@ -1388,6 +1500,7 @@ exit:
    *
    *  @param outfile - open FILE * for writing
    *  @param node - xmlNodePtr containing struct or union element
+   *  @param opts - pointer to @a options struct
    *  @param aggregate_name - string containing aggregate name
    *  @param function_prefix - string containing leading part of function name
    *  @param indent - indent level for output
@@ -1398,6 +1511,7 @@ exit:
   
 static void emit_aggregate_avl_dup_annotation(FILE *outfile,
                                               xmlNodePtr node,
+                                              options *opts,
                                               const char *aggregate_name,
                                               const char *function_prefix,
                                               int indent)
@@ -1405,13 +1519,13 @@ static void emit_aggregate_avl_dup_annotation(FILE *outfile,
   if (!outfile || !node || !aggregate_name || !function_prefix) goto exit;
   if (!node->name) goto exit;
 
-  if (!option_annotation()) goto exit;
+  if (!option_annotation(opts)) goto exit;
 
   if (strcmp((char *)node->name, "struct") &&
       strcmp((char *)node->name, "union"))
     goto exit;
 
-  switch (option_annotation())
+  switch (option_annotation(opts))
   {
     case annotation_type_doxygen:
       emit_indent(outfile, indent);
@@ -1509,6 +1623,7 @@ exit:
   /**
    *  @fn void emit_aggregate_avl_free_annotation(FILE *outfile,
    *                                              xmlNodePtr node,
+   *                                              options *opts,
    *                                              const char *aggregate_name,
    *                                              const char *function_prefix,
    *                                              int indent)
@@ -1517,6 +1632,7 @@ exit:
    *
    *  @param outfile - open FILE * for writing
    *  @param node - xmlNodePtr containing struct or union element
+   *  @param opts - pointer to @a options struct
    *  @param aggregate_name - string containing aggregate name
    *  @param function_prefix - string containing leading part of function name
    *  @param indent - indent level for output
@@ -1527,6 +1643,7 @@ exit:
   
 static void emit_aggregate_avl_free_annotation(FILE *outfile,
                                                xmlNodePtr node,
+                                               options *opts,
                                                const char *aggregate_name,
                                                const char *function_prefix,
                                                int indent)
@@ -1534,13 +1651,13 @@ static void emit_aggregate_avl_free_annotation(FILE *outfile,
   if (!outfile || !node || !aggregate_name || !function_prefix) goto exit;
   if (!node->name) goto exit;
 
-  if (!option_annotation()) goto exit;
+  if (!option_annotation(opts)) goto exit;
 
   if (strcmp((char *)node->name, "struct") &&
       strcmp((char *)node->name, "union"))
     goto exit;
 
-  switch (option_annotation())
+  switch (option_annotation(opts))
   {
     case annotation_type_doxygen:
       emit_indent(outfile, indent);
@@ -1632,14 +1749,16 @@ exit:
   /**
    *  @fn void emit_aggregate_avl_insert_annotation(FILE *outfile,
    *                                                xmlNodePtr node,
-    *                                               const char *aggregate_name,
-    *                                               const char *function_prefix,
-    *                                               int indent)
+   *                                                options *opts,
+   *                                                const char *aggregate_name,
+   *                                                const char *function_prefix,
+   *                                                int indent)
    *
    *  @brief emits annotation for aggregate avl add function
    *
    *  @param outfile - open FILE * for writing
    *  @param node - xmlNodePtr containing struct or union element
+   *  @param opts - pointer to @a options struct
    *  @param aggregate_name - string containing aggregate name
    *  @param function_prefix - string containing leading part of function name
    *  @param indent - indent level for output
@@ -1650,6 +1769,7 @@ exit:
   
 static void emit_aggregate_avl_insert_annotation(FILE *outfile,
                                                  xmlNodePtr node,
+                                                 options *opts,
                                                  const char *aggregate_name,
                                                  const char *function_prefix,
                                                  int indent)
@@ -1657,13 +1777,13 @@ static void emit_aggregate_avl_insert_annotation(FILE *outfile,
   if (!outfile || !node || !aggregate_name || !function_prefix) goto exit;
   if (!node->name) goto exit;
 
-  if (!option_annotation()) goto exit;
+  if (!option_annotation(opts)) goto exit;
 
   if (strcmp((char *)node->name, "struct") &&
       strcmp((char *)node->name, "union"))
     goto exit;
 
-  switch (option_annotation())
+  switch (option_annotation(opts))
   {
     case annotation_type_doxygen:
       emit_indent(outfile, indent);
@@ -1765,6 +1885,7 @@ exit:
   /**
    *  @fn void emit_aggregate_avl_delete_annotation(FILE *outfile,
    *                                                xmlNodePtr node,
+   *                                                options *opts,
    *                                                const char *aggregate_name,
    *                                                const char *function_prefix,
    *                                                int indent)
@@ -1773,6 +1894,7 @@ exit:
    *
    *  @param outfile - open FILE * for writing
    *  @param node - xmlNodePtr containing struct or union element
+   *  @param opts - pointer to @a options struct
    *  @param aggregate_name - string containing aggregate name
    *  @param function_prefix - string containing leading part of function name
    *  @param indent - indent level for output
@@ -1783,6 +1905,7 @@ exit:
   
 static void emit_aggregate_avl_delete_annotation(FILE *outfile,
                                                  xmlNodePtr node,
+                                                 options *opts,
                                                  const char *aggregate_name,
                                                  const char *function_prefix,
                                                  int indent)
@@ -1790,13 +1913,13 @@ static void emit_aggregate_avl_delete_annotation(FILE *outfile,
   if (!outfile || !node || !aggregate_name || !function_prefix) goto exit;
   if (!node->name) goto exit;
 
-  if (!option_annotation()) goto exit;
+  if (!option_annotation(opts)) goto exit;
 
   if (strcmp((char *)node->name, "struct") &&
       strcmp((char *)node->name, "union"))
     goto exit;
 
-  switch (option_annotation())
+  switch (option_annotation(opts))
   {
     case annotation_type_doxygen:
       emit_indent(outfile, indent);
@@ -1900,6 +2023,7 @@ exit:
   /**
    *  @fn void emit_aggregate_avl_find_annotation(FILE *outfile,
    *                                              xmlNodePtr node,
+   *                                              options *opts,
    *                                              const char *aggregate_name,
    *                                              const char *function_prefix,
    *                                              int indent)
@@ -1908,6 +2032,7 @@ exit:
    *
    *  @param outfile - open FILE * for writing
    *  @param node - xmlNodePtr containing struct or union element
+   *  @param opts - pointer to @a options struct
    *  @param aggregate_name - string containing aggregate name
    *  @param function_prefix - string containing leading part of function  name
    *  @param indent - indent level for output
@@ -1918,6 +2043,7 @@ exit:
   
 static void emit_aggregate_avl_find_annotation(FILE *outfile,
                                                xmlNodePtr node,
+                                               options *opts,
                                                const char *aggregate_name,
                                                const char *function_prefix,
                                                int indent)
@@ -1925,13 +2051,13 @@ static void emit_aggregate_avl_find_annotation(FILE *outfile,
   if (!outfile || !node || !aggregate_name || !function_prefix) goto exit;
   if (!node->name) goto exit;
 
-  if (!option_annotation()) goto exit;
+  if (!option_annotation(opts)) goto exit;
 
   if (strcmp((char *)node->name, "struct") &&
       strcmp((char *)node->name, "union"))
     goto exit;
 
-  switch (option_annotation())
+  switch (option_annotation(opts))
   {
     case annotation_type_doxygen:
       emit_indent(outfile, indent);
@@ -2038,6 +2164,7 @@ exit:
   /**
    *  @fn void emit_aggregate_avl_walk_annotation(FILE *outfile,
    *                                              xmlNodePtr node,
+   *                                              options *opts,
    *                                              const char *aggregate_name,
    *                                              const char *function_prefix,
    *                                              int indent)
@@ -2046,6 +2173,7 @@ exit:
    *
    *  @param outfile - open FILE * for writing
    *  @param node - xmlNodePtr containing struct or union element
+   *  @param opts - pointer to @a options struct
    *  @param aggregate_name - string containing aggregate name
    *  @param function_prefix - string containing leading part of function name
    *  @param indent - indent level for output
@@ -2056,6 +2184,7 @@ exit:
   
 static void emit_aggregate_avl_walk_annotation(FILE *outfile,
                                                xmlNodePtr node,
+                                               options *opts,
                                                const char *aggregate_name,
                                                const char *function_prefix,
                                                int indent)
@@ -2063,13 +2192,13 @@ static void emit_aggregate_avl_walk_annotation(FILE *outfile,
   if (!outfile || !node || !aggregate_name || !function_prefix) goto exit;
   if (!node->name) goto exit;
 
-  if (!option_annotation()) goto exit;
+  if (!option_annotation(opts)) goto exit;
 
   if (strcmp((char *)node->name, "struct") &&
       strcmp((char *)node->name, "union"))
     goto exit;
 
-  switch (option_annotation())
+  switch (option_annotation(opts))
   {
     case annotation_type_doxygen:
       emit_indent(outfile, indent);
@@ -2181,15 +2310,17 @@ exit:
 
   /**
    *  @fn void emit_aggregate_avl_new_node_annotation(FILE *outfile,
-   *                                                  xmlNodePtr node,
-   *                                                  const char *aggregate_name,
-   *                                                  const char *function_prefix,
-   *                                                  int indent)
+   *                                              xmlNodePtr node,
+   *                                              options *opts,
+   *                                              const char *aggregate_name,
+   *                                              const char *function_prefix,
+   *                                              int indent)
    *
    *  @brief emits annotation for aggregate avl new node function
    *
    *  @param outfile - open FILE * for writing
    *  @param node - xmlNodePtr containing struct or union element
+   *  @param opts - pointer to @a options struct
    *  @param aggregate_name - string containing aggregate name
    *  @param function_prefix - string containing leading part of function name
    *  @param indent - indent level for output
@@ -2200,6 +2331,7 @@ exit:
   
 static void emit_aggregate_avl_new_node_annotation(FILE *outfile,
                                                    xmlNodePtr node,
+                                                   options *opts,
                                                    const char *aggregate_name,
                                                    const char *function_prefix,
                                                    int indent)
@@ -2207,13 +2339,13 @@ static void emit_aggregate_avl_new_node_annotation(FILE *outfile,
   if (!outfile || !node || !aggregate_name || !function_prefix) goto exit;
   if (!node->name) goto exit;
 
-  if (!option_annotation()) goto exit;
+  if (!option_annotation(opts)) goto exit;
 
   if (strcmp((char *)node->name, "struct") &&
       strcmp((char *)node->name, "union"))
     goto exit;
 
-  switch (option_annotation())
+  switch (option_annotation(opts))
   {
     case annotation_type_doxygen:
       emit_indent(outfile, indent);
@@ -2308,6 +2440,7 @@ exit:
   /**
    *  @fn void emit_aggregate_avl_dup_node_annotation(FILE *outfile,
    *                                                  xmlNodePtr node,
+   *                                                  options *opts,
    *                                                  const char *aggregate_name,
    *                                                  const char *function_prefix,
    *                                                  int indent)
@@ -2316,6 +2449,7 @@ exit:
    *
    *  @param outfile - open FILE * for writing
    *  @param node - xmlNodePtr containing struct or union element
+   *  @param opts - pointer to @a options struct
    *  @param aggregate_name - string containing aggregate name
    *  @param function_prefix - string containing leading part of function name
    *  @param indent - indent level for output
@@ -2326,6 +2460,7 @@ exit:
   
 static void emit_aggregate_avl_dup_node_annotation(FILE *outfile,
                                                    xmlNodePtr node,
+                                                   options *opts,
                                                    const char *aggregate_name,
                                                    const char *function_prefix,
                                                    int indent)
@@ -2333,13 +2468,13 @@ static void emit_aggregate_avl_dup_node_annotation(FILE *outfile,
   if (!outfile || !node || !aggregate_name || !function_prefix) goto exit;
   if (!node->name) goto exit;
 
-  if (!option_annotation()) goto exit;
+  if (!option_annotation(opts)) goto exit;
 
   if (strcmp((char *)node->name, "struct") &&
       strcmp((char *)node->name, "union"))
     goto exit;
 
-  switch (option_annotation())
+  switch (option_annotation(opts))
   {
     case annotation_type_doxygen:
       emit_indent(outfile, indent);
@@ -2429,15 +2564,17 @@ exit:
 
   /**
    *  @fn void emit_aggregate_avl_free_node_annotation(FILE *outfile,
-   *                                                   xmlNodePtr node,
-   *                                                   const char *aggregate_name,
-   *                                                   const char *function_prefix,
-   *                                                   int indent)
+   *                                               xmlNodePtr node,
+   *                                               options *opts,
+   *                                               const char *aggregate_name,
+   *                                               const char *function_prefix,
+   *                                               int indent)
    *
    *  @brief emits annotation for aggregate avl free node function
    *
    *  @param outfile - open FILE * for writing
    *  @param node - xmlNodePtr containing struct or union element
+   *  @param opts - pointer to @a options struct
    *  @param aggregate_name - string containing aggregate name
    *  @param function_prefix - string containing leading part of function name
    *  @param indent - indent level for output
@@ -2448,6 +2585,7 @@ exit:
   
 static void emit_aggregate_avl_free_node_annotation(FILE *outfile,
                                                    xmlNodePtr node,
+                                                   options *opts,
                                                    const char *aggregate_name,
                                                    const char *function_prefix,
                                                    int indent)
@@ -2455,13 +2593,13 @@ static void emit_aggregate_avl_free_node_annotation(FILE *outfile,
   if (!outfile || !node || !aggregate_name || !function_prefix) goto exit;
   if (!node->name) goto exit;
 
-  if (!option_annotation()) goto exit;
+  if (!option_annotation(opts)) goto exit;
 
   if (strcmp((char *)node->name, "struct") &&
       strcmp((char *)node->name, "union"))
     goto exit;
 
-  switch (option_annotation())
+  switch (option_annotation(opts))
   {
     case annotation_type_doxygen:
       emit_indent(outfile, indent);
@@ -2550,15 +2688,17 @@ exit:
 
   /**
    *  @fn void emit_aggregate_avl_cmp_node_annotation(FILE *outfile,
-   *                                                  xmlNodePtr node,
-   *                                                  const char *aggregate_name,
-   *                                                  const char *function_prefix,
-   *                                                  int indent)
+   *                                              xmlNodePtr node,
+   *                                              options *opts,
+   *                                              const char *aggregate_name,
+   *                                              const char *function_prefix,
+   *                                              int indent)
    *
    *  @brief emits annotation for aggregate avl cmp node function
    *
    *  @param outfile - open FILE * for writing
    *  @param node - xmlNodePtr containing struct or union element
+   *  @param opts - pointer to @a options struct
    *  @param aggregate_name - string containing aggregate name
    *  @param function_prefix - string containing leading part of function name
    *  @param indent - indent level for output
@@ -2569,6 +2709,7 @@ exit:
   
 static void emit_aggregate_avl_cmp_node_annotation(FILE *outfile,
                                                    xmlNodePtr node,
+                                                   options *opts,
                                                    const char *aggregate_name,
                                                    const char *function_prefix,
                                                    int indent)
@@ -2576,13 +2717,13 @@ static void emit_aggregate_avl_cmp_node_annotation(FILE *outfile,
   if (!outfile || !node || !aggregate_name || !function_prefix) goto exit;
   if (!node->name) goto exit;
 
-  if (!option_annotation()) goto exit;
+  if (!option_annotation(opts)) goto exit;
 
   if (strcmp((char *)node->name, "struct") &&
       strcmp((char *)node->name, "union"))
     goto exit;
 
-  switch (option_annotation())
+  switch (option_annotation(opts))
   {
     case annotation_type_doxygen:
       emit_indent(outfile, indent);

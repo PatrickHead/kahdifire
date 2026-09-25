@@ -41,21 +41,22 @@
 
   /*  Module specific function prototypes  */
 
-void emit_readme(FILE *outfile, const char *project_name);
+void emit_readme(FILE *outfile, options *opts, const char *project_name);
 
 /**
- *  @fn void gen_readme(xmlDocPtr doc, const char *base_name)
+ *  @fn void gen_readme(xmlDocPtr doc, options *opts, const char *base_name)
  *
  *  @brief generates readme file
  *
  *  @param doc - xmlDocPtr containing declaration metadata
+ *  @param opts - pointer to @a options struct
  *  @param base_name - basic name of project for output files
  *
  *  @par Returns
  *  Nothing.
  */
 
-void gen_readme(xmlDocPtr doc, const char *base_name)
+void gen_readme(xmlDocPtr doc, options *opts, const char *base_name)
 {
   xmlNodePtr root;
   FILE *outfile = NULL;
@@ -66,7 +67,7 @@ void gen_readme(xmlDocPtr doc, const char *base_name)
 
   if (!doc || !base_name) goto exit;
 
-  if (!option_gen_readme()) goto exit;
+  if (!option_gen_readme(opts)) goto exit;
 
   root = xmlDocGetRootElement(doc);
   if (!root) goto exit;
@@ -91,7 +92,7 @@ void gen_readme(xmlDocPtr doc, const char *base_name)
   outfile = fopen(outfile_name, "w");
   if (!outfile) goto exit;
 
-  emit_readme(outfile, project_name);
+  emit_readme(outfile, opts, project_name);
 
 exit:
   if (outfile) fclose(outfile);
@@ -161,18 +162,19 @@ static const char *_readme =  /**<  format string for readme */
   "\n";
 
 /**
- *  @fn void emit_readme(FILE *outfile, const char *project_name)
+ *  @fn void emit_readme(FILE *outfile, options *opts, const char *project_name)
  *
  *  @brief outputs README file
  *
  *  @param outfile - FILE * open for writing
+ *  @param opts - pointer to @a options struct
  *  @param project_name - string containing name of project for rule names
  *
  *  @par Returns
  *  Nothing.
  */
 
-void emit_readme(FILE *outfile, const char *project_name)
+void emit_readme(FILE *outfile, options *opts, const char *project_name)
 {
   char *license_text = NULL;
   char *p;
@@ -204,10 +206,10 @@ void emit_readme(FILE *outfile, const char *project_name)
           _readme,
           project_name,
           project_name,
-          option_makefile_install_dir(),
+          option_makefile_install_dir(opts),
           project_name,
-          option_makefile_install_dir(),
-          option_makefile_install_dir(),
+          option_makefile_install_dir(opts),
+          option_makefile_install_dir(opts),
           project_name,
           "CONTACT NAME",
           "CONTACT EMAIL ADDRESS",
