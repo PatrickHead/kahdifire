@@ -85,10 +85,10 @@ int gen_code(const char *file_name, const char *base_name, options *opts)
   if (!doc) goto exit;
 
   gen_header(doc, opts, base_name);
-  gen_source(doc, base_name);
+  gen_source(doc, opts, base_name);
   gen_makefile(doc, opts, base_name);
   gen_readme(doc, opts, base_name);
-  gen_doxygen_configuration(doc, base_name, opts);
+  gen_doxygen_configuration(doc, opts, base_name);
 
   retval = 0;
 

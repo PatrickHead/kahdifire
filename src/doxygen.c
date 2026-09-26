@@ -43,11 +43,14 @@
 static void emit_doxygen_configuration(FILE *outfile, const char *project_name);
 
 /**
- *  @fn void gen_doxygen_configuration(xmlDocPtr doc, const char *base_name)
+ *  @fn void gen_doxygen_configuration(xmlDocPtr doc,
+ *                                     options *opts,
+ *                                     const char *base_name)
  *
  *  @brief generates doxygen configuration file
  *
  *  @param doc - xmlDocPtr containing declaration metadata
+ *  @param opts - pointer to @a options struct
  *  @param base_name - basic name of project for output files
  *
  *  @par Returns
@@ -55,8 +58,8 @@ static void emit_doxygen_configuration(FILE *outfile, const char *project_name);
  */
 
 void gen_doxygen_configuration(xmlDocPtr doc,
-                               const char *base_name,
-                               options *opts)
+                               options *opts,
+                               const char *base_name)
 {
   xmlNodePtr root;
   FILE *outfile = NULL;

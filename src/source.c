@@ -37,67 +37,83 @@
 
 static void emit_enum_functions(FILE *outfile,
                                 xmlNodePtr node,
+                                options *opts,
                                 const char *project_name);
 static void emit_aggregate_functions(FILE *outfile,
                                      aggregates *type_cache,
                                      xmlNodePtr node,
+                                     options *opts,
                                      const char *project_name);
 static void emit_aggregate_new_function(FILE *outfile,
                                         xmlNodePtr node,
+                                        options *opts,
                                         const char *project,
                                         int indent);
 static void emit_aggregate_dup_function(FILE *outfile,
                                         aggregates *type_cache,
                                         xmlNodePtr node,
+                                        options *opts,
                                         const char *project,
                                         int indent);
 static void emit_aggregate_free_function(FILE *outfile,
                                          aggregates *type_cache,
                                          xmlNodePtr node,
+                                         options *opts,
                                          const char *project,
                                          int indent);
 static void emit_aggregate_getters_and_setters(FILE *outfile,
                                                xmlNodePtr node,
+                                               options *opts,
                                                const char *project,
                                                int indent);
 static void emit_aggregate_getter_function(FILE *outfile,
                                            xmlNodePtr node,
+                                           options *opts,
                                            const char *project,
                                            const char *aggregate_name,
                                            int indent);
 static void emit_aggregate_setter_function(FILE *outfile,
                                            xmlNodePtr node,
+                                           options *opts,
                                            const char *project,
                                            const char *aggregate_name,
                                            int indent);
 
-static void emit_source_annotation(FILE *outfile, const char *file_name);
+static void emit_source_annotation(FILE *outfile,
+                                   options *opts,
+                                   const char *file_name);
 static void emit_enum_str_to_type_annotation(FILE *outfile,
                                              xmlNodePtr node,
+                                             options *opts,
                                              const char *aggregate_name,
                                              const char *function_prefix,
                                              int indent);
 static void emit_enum_type_to_str_annotation(FILE *outfile,
                                              xmlNodePtr node,
+                                             options *opts,
                                              const char *aggregate_name,
                                              const char *function_prefix,
                                              int indent);
 static void emit_aggregate_new_annotation(FILE *outfile,
                                           xmlNodePtr node,
+                                          options *opts,
                                           const char *aggregate_name,
                                           const char *function_prefix,
                                           int indent);
 static void emit_aggregate_dup_annotation(FILE *outfile,
                                           xmlNodePtr node,
+                                          options *opts,
                                           const char *aggregate_name,
                                           const char *function_prefix,
                                           int indent);
 static void emit_aggregate_free_annotation(FILE *outfile,
                                            xmlNodePtr node,
+                                           options *opts,
                                            const char *aggregate_name,
                                            const char *function_prefix,
                                            int indent);
 static void emit_aggregate_getter_annotation(FILE *outfile,
+                                             options *opts,
                                              const char *field_type,
                                              const char *pointers,
                                              const char *function_name,
@@ -105,6 +121,7 @@ static void emit_aggregate_getter_annotation(FILE *outfile,
                                              const char *field_name,
                                              int indent);
 static void emit_aggregate_setter_annotation(FILE *outfile,
+                                             options *opts,
                                              const char *field_type,
                                              const char *pointers,
                                              const char *function_name,
@@ -113,18 +130,19 @@ static void emit_aggregate_setter_annotation(FILE *outfile,
                                              int indent);
 
   /**
-   *  @fn void gen_source(xmlDocPtr doc, const char *base_name)
+   *  @fn void gen_source(xmlDocPtr doc, options *opts, const char *base_name)
    *
    *  @brief generates C source code from enum, struct and union declarations
    *
    *  @param doc - xmlDocPtr containing declaration metadata
+   *  @param opts - pointer to @a options struct
    *  @param base_name - basic name of project for output files
    *
    *  @par Returns
    *  Nothing.
    */
   
-void gen_source(xmlDocPtr doc, const char *base_name)
+void gen_source(xmlDocPtr doc, options *opts, const char *base_name)
 {
   xmlNodePtr root;
   xmlNodePtr node;
@@ -167,7 +185,7 @@ void gen_source(xmlDocPtr doc, const char *base_name)
 
   str_lower(tmp);
 
-  switch (option_license())
+  switch (option_license(opts))
   {
     case license_type_GPL_v3:
     case license_type_LGPL_v3:
@@ -182,7 +200,7 @@ void gen_source(xmlDocPtr doc, const char *base_name)
 
     // Emit warning about USER ANNOTATION
 
-  switch (option_annotation())
+  switch (option_annotation(opts))
   {
     case annotation_type_text:
     case annotation_type_doxygen:
@@ -196,7 +214,7 @@ void gen_source(xmlDocPtr doc, const char *base_name)
       break;
   }
 
-  emit_source_annotation(outfile, basename(outfile_name));
+  emit_source_annotation(outfile, opts, basename(outfile_name));
 
     // Emit front matter for source file
 
@@ -216,14 +234,14 @@ void gen_source(xmlDocPtr doc, const char *base_name)
   for (node = root->children; node; node = node->next)
   {
     if (!strcmp((char *)node->name, "enum"))
-      emit_enum_functions(outfile, node, project_name);
+      emit_enum_functions(outfile, node, opts, project_name);
     else if (!strcmp((char *)node->name, "struct") ||
              !strcmp((char *)node->name, "union"))
     {
-      emit_aggregate_functions(outfile, type_cache, node, project_name);
-      emit_aggregate_array_functions(outfile, node, project_name);
-      emit_aggregate_list_functions(outfile, node, project_name);
-      emit_aggregate_avl_functions(outfile, node, project_name);
+      emit_aggregate_functions(outfile, type_cache, node, opts, project_name);
+      emit_aggregate_array_functions(outfile, node, opts, project_name);
+      emit_aggregate_list_functions(outfile, node, opts, project_name);
+      emit_aggregate_avl_functions(outfile, node, opts, project_name);
     }
   }
 
@@ -240,12 +258,14 @@ exit:
   /**
    *  @fn void emit_enum_functions(FILE *outfile,
    *                               xmlNodePtr node,
+   *                               options *opts,
    *                               const char *project_name)
    *
    *  @brief generates C source code from enum element in @p node
    *
    *  @param outfile - open FILE * for writing
    *  @param node - xmlNodePtr containing enum element
+   *  @param opts - pointer to @a options struct
    *  @param project_name - string containing project name
    *
    *  @par Returns
@@ -254,6 +274,7 @@ exit:
   
 static void emit_enum_functions(FILE *outfile,
                                 xmlNodePtr node,
+                                options *opts,
                                 const char *project_name)
 {
   char *project = NULL;
@@ -289,7 +310,7 @@ static void emit_enum_functions(FILE *outfile,
 
     // string to type
 
-  emit_enum_str_to_type_annotation(outfile, node, name, fpre, indent + 1);
+  emit_enum_str_to_type_annotation(outfile, node, opts, name, fpre, indent + 1);
 
   fprintf(outfile,
           "%s %s_from_str(char *enum_name)\n",
@@ -338,7 +359,7 @@ static void emit_enum_functions(FILE *outfile,
 
     // type to string
 
-  emit_enum_type_to_str_annotation(outfile, node, name, fpre, indent + 1);
+  emit_enum_type_to_str_annotation(outfile, node, opts, name, fpre, indent + 1);
 
   fprintf(outfile, "char *%s_to_str(%s type)\n", fpre, name);
   fprintf(outfile, "{\n");
@@ -401,6 +422,7 @@ exit:
    *  @fn void emit_aggregate_functions(FILE *outfile,
                                         aggregates *type_cache,
    *                                    xmlNodePtr node,
+   *                                    options *opts,
    *                                    const char *project_name)
    *
    *  @brief generates C source code from struct or union element in @p node
@@ -408,6 +430,7 @@ exit:
    *  @param outfile - open FILE * for writing
    *  @param type_cache - pointer to @a aggregates struct, cache of known types
    *  @param node - xmlNodePtr containing struct or union element
+   *  @param opts - pointer to @a options struct
    *  @param project_name - string containing project name
    *
    *  @par Returns
@@ -417,6 +440,7 @@ exit:
 static void emit_aggregate_functions(FILE *outfile,
                                      aggregates *type_cache,
                                      xmlNodePtr node,
+                                     options *opts,
                                      const char *project_name)
 {
   char *project = NULL;
@@ -446,10 +470,15 @@ static void emit_aggregate_functions(FILE *outfile,
 
   fprintf(outfile, "\n");
 
-  emit_aggregate_new_function(outfile, node, project, indent);
-  emit_aggregate_dup_function(outfile, type_cache, node, project, indent);
-  emit_aggregate_free_function(outfile, type_cache, node, project, indent);
-  emit_aggregate_getters_and_setters(outfile, node, project, indent);
+  emit_aggregate_new_function(outfile, node, opts, project, indent);
+  emit_aggregate_dup_function(outfile, type_cache, node, opts, project, indent);
+  emit_aggregate_free_function(outfile,
+                               type_cache,
+                               node,
+                               opts,
+                               project,
+                               indent);
+  emit_aggregate_getters_and_setters(outfile, node, opts, project, indent);
 
 exit:
   free(project);
@@ -461,6 +490,7 @@ exit:
   /**
    *  @fn void emit_aggregate_new_function(FILE *outfile,
    *                                       xmlNodePtr node,
+   *                                       options *opts,
    *                                       const char *project,
    *                                       int indent)
    *
@@ -469,6 +499,7 @@ exit:
    *
    *  @param outfile - open FILE * for writing
    *  @param node - xmlNodePtr containing struct or union element
+   *  @param opts - pointer to @a options struct
    *  @param project - string containing project
    *  @param indent - indent level for output
    *
@@ -478,6 +509,7 @@ exit:
   
 static void emit_aggregate_new_function(FILE *outfile,
                                         xmlNodePtr node,
+                                        options *opts,
                                         const char *project,
                                         int indent)
 {
@@ -494,7 +526,7 @@ static void emit_aggregate_new_function(FILE *outfile,
 
   fpre = function_prefix(project, name);
 
-  emit_aggregate_new_annotation(outfile, node, name, fpre, indent + 1);
+  emit_aggregate_new_annotation(outfile, node, opts, name, fpre, indent + 1);
 
   fprintf(outfile,
           "%s *%s_new(void)\n",
@@ -536,6 +568,7 @@ exit:
   /**
    *  @fn void emit_aggregate_dup_function(FILE *outfile,
    *                                       xmlNodePtr node,
+   *                                       options *opts,
    *                                       aggregates *type_cache,
    *                                       const char *project,
    *                                       int indent)
@@ -546,6 +579,7 @@ exit:
    *  @param outfile - open FILE * for writing
    *  @param type_cache - pointer to @a aggregates struct, cache of known types
    *  @param node - xmlNodePtr containing struct or union element
+   *  @param opts - pointer to @a options struct
    *  @param project - string containing project name
    *  @param indent - indent level for output
    *
@@ -556,6 +590,7 @@ exit:
 static void emit_aggregate_dup_function(FILE *outfile,
                                         aggregates *type_cache,
                                         xmlNodePtr node,
+                                        options *opts,
                                         const char *project,
                                         int indent)
 {
@@ -583,7 +618,7 @@ static void emit_aggregate_dup_function(FILE *outfile,
 
   fpre = function_prefix(project, name);
 
-  emit_aggregate_dup_annotation(outfile, node, name, fpre, indent + 1);
+  emit_aggregate_dup_annotation(outfile, node, opts, name, fpre, indent + 1);
 
   fprintf(outfile,
           "%s *%s_dup(%s *instance)\n",
@@ -745,7 +780,7 @@ static void emit_aggregate_dup_function(FILE *outfile,
                 name);
 
         emit_indent(outfile, indent);
-#warning the following needs to more sofisticated.  a 'dup' instead of memcpy
+#warning the following needs to more sophisticated.  a 'dup' instead of memcpy
         fprintf(outfile,
                 "memcpy(&new_instance->%s, tmp_%s_struct, sizeof(%s));\n",
                 name,
@@ -793,6 +828,7 @@ exit:
    *  @fn void emit_aggregate_free_function(FILE *outfile,
    *                                        aggregates *type_cache,
    *                                        xmlNodePtr node,
+   *                                        options *opts,
    *                                        const char *project,
    *                                        int indent)
    *
@@ -802,6 +838,7 @@ exit:
    *  @param outfile - open FILE * for writing
    *  @param type_cache - pointer to @a aggregates struct, cache of known types
    *  @param node - xmlNodePtr containing struct or union element
+   *  @param opts - pointer to @a options struct
    *  @param project - string containing project name
    *  @param indent - indent level for output
    *
@@ -812,6 +849,7 @@ exit:
 static void emit_aggregate_free_function(FILE *outfile,
                                          aggregates *type_cache,
                                          xmlNodePtr node,
+                                         options *opts,
                                          const char *project,
                                          int indent)
 {
@@ -838,7 +876,7 @@ static void emit_aggregate_free_function(FILE *outfile,
 
   fpre = function_prefix(project, name);
 
-  emit_aggregate_free_annotation(outfile, node, name, fpre, indent + 1);
+  emit_aggregate_free_annotation(outfile, node, opts, name, fpre, indent + 1);
 
   fprintf(outfile,
           "void %s_free(%s *instance)\n",
@@ -975,6 +1013,7 @@ exit:
   /**
    *  @fn void emit_aggregate_getters_and_setters(FILE *outfile,
    *                                              xmlNodePtr node,
+   *                                              options *opts,
    *                                              const char *project,
    *                                              int indent)
    *
@@ -983,6 +1022,7 @@ exit:
    *
    *  @param outfile - open FILE * for writing
    *  @param node - xmlNodePtr containing struct or union element
+   *  @param opts - pointer to @a options struct
    *  @param project - string containing project name
    *  @param indent - indent level for output
    *
@@ -992,6 +1032,7 @@ exit:
   
 static void emit_aggregate_getters_and_setters(FILE *outfile,
                                                xmlNodePtr node,
+                                               options *opts,
                                                const char *project,
                                                int indent)
 {
@@ -1011,11 +1052,13 @@ static void emit_aggregate_getters_and_setters(FILE *outfile,
     if (strcmp((char *)child->name, "field")) continue;
     emit_aggregate_getter_function(outfile,
                                    child,
+                                   opts,
                                    project,
                                    aggregate_name,
                                    indent);
     emit_aggregate_setter_function(outfile,
                                    child,
+                                   opts,
                                    project,
                                    aggregate_name,
                                    indent);
@@ -1030,6 +1073,7 @@ exit:
   /**
    *  @fn void emit_aggregate_getter_function(FILE *outfile,
    *                                          xmlNodePtr node,
+   *                                          options *opts,
    *                                          const char *project,
    *                                          const char *aggregate_name,
    *                                          int indent)
@@ -1039,6 +1083,7 @@ exit:
    *
    *  @param outfile - open FILE * for writing
    *  @param node - xmlNodePtr containing struct or union element
+   *  @param opts - pointer to @a options struct
    *  @param project - string containing project name
    *  @param aggregate_name - string containing name of struct or union
    *  @param indent - indent level for output
@@ -1049,6 +1094,7 @@ exit:
   
 static void emit_aggregate_getter_function(FILE *outfile,
                                            xmlNodePtr node,
+                                           options *opts,
                                            const char *project,
                                            const char *aggregate_name,
                                            int indent)
@@ -1153,6 +1199,7 @@ static void emit_aggregate_getter_function(FILE *outfile,
   else
   {
     emit_aggregate_getter_annotation(outfile,
+                                     opts,
                                      field_type,
                                      pointers,
                                      function_name,
@@ -1206,6 +1253,7 @@ exit:
   /**
    *  @fn void emit_aggregate_setter_function(FILE *outfile,
    *                                          xmlNodePtr node,
+   *                                          options *opts,
    *                                          const char *project,
    *                                          const char *aggregate_name,
    *                                          int indent)
@@ -1215,6 +1263,7 @@ exit:
    *
    *  @param outfile - open FILE * for writing
    *  @param node - xmlNodePtr containing struct or union element
+   *  @param opts - pointer to @a options struct
    *  @param project - string containing project name
    *  @param aggregate_name - string containing name of struct or union
    *  @param indent - indent level for output
@@ -1225,6 +1274,7 @@ exit:
   
 static void emit_aggregate_setter_function(FILE *outfile,
                                            xmlNodePtr node,
+                                           options *opts,
                                            const char *project,
                                            const char *aggregate_name,
                                            int indent)
@@ -1329,6 +1379,7 @@ static void emit_aggregate_setter_function(FILE *outfile,
   else
   {
     emit_aggregate_setter_annotation(outfile,
+                                     opts,
                                      field_type,
                                      pointers,
                                      function_name,
@@ -1397,22 +1448,27 @@ exit:
 }
 
   /**
-   *  @fn void emit_source_annotation(FILE *outfile, const char *file_name)
+   *  @fn void emit_source_annotation(FILE *outfile,
+   *                                  options *opts,
+   *                                  const char *file_name)
    *
    *  @brief emits global source annotation
    *
    *  @param outfile - open FILE * for writing
+   *  @param opts - pointer to @a options struct
    *  @param file_name - string containing output file name
    *
    *  @par Returns
    *  Nothing.
    */
   
-static void emit_source_annotation(FILE *outfile, const char *file_name)
+static void emit_source_annotation(FILE *outfile,
+                                   options *opts,
+                                   const char *file_name)
 {
   if (!outfile || !file_name) goto exit;
 
-  switch (option_annotation())
+  switch (option_annotation(opts))
   {
     case annotation_type_doxygen:
       fprintf(outfile, "/**\n");
@@ -1442,6 +1498,7 @@ exit:
   /**
    *  @fn void emit_enum_str_to_type_annotation(FILE *outfile,
    *                                            xmlNodePtr node,
+   *                                            options *opts,
    *                                            const char *enum_name,
    *                                            const char *function_prefix,
    *                                            int indent)
@@ -1450,6 +1507,7 @@ exit:
    *
    *  @param outfile - open FILE * for writing
    *  @param node - xmlNodePtr containing struct or union element
+   *  @param opts - pointer to @a options struct
    *  @param enum_name - string containing enum name
    *  @param function_prefix - string containing leading part of function name
    *  @param indent - indent level for output
@@ -1460,6 +1518,7 @@ exit:
   
 static void emit_enum_str_to_type_annotation(FILE *outfile,
                                              xmlNodePtr node,
+                                             options *opts,
                                              const char *enum_name,
                                              const char *function_prefix,
                                              int indent)
@@ -1467,12 +1526,12 @@ static void emit_enum_str_to_type_annotation(FILE *outfile,
   if (!outfile || !node || !enum_name || !function_prefix) goto exit;
   if (!node->name) goto exit;
 
-  if (!option_annotation()) goto exit;
+  if (!option_annotation(opts)) goto exit;
 
   if (strcmp((char *)node->name, "enum"))
     goto exit;
 
-  switch (option_annotation())
+  switch (option_annotation(opts))
   {
     case annotation_type_doxygen:
       emit_indent(outfile, indent);
@@ -1561,6 +1620,7 @@ exit:
   /**
    *  @fn void emit_enum_type_to_str_annotation(FILE *outfile,
    *                                            xmlNodePtr node,
+   *                                            options *opts,
    *                                            const char *enum_name,
    *                                            const char *function_prefix,
    *                                            int indent)
@@ -1569,6 +1629,7 @@ exit:
    *
    *  @param outfile - open FILE * for writing
    *  @param node - xmlNodePtr containing struct or union element
+   *  @param opts - pointer to @a options struct
    *  @param enum_name - string containing enum name
    *  @param function_prefix - string containing leading part of function name
    *  @param indent - indent level for output
@@ -1579,6 +1640,7 @@ exit:
   
 static void emit_enum_type_to_str_annotation(FILE *outfile,
                                              xmlNodePtr node,
+                                             options *opts,
                                              const char *enum_name,
                                              const char *function_prefix,
                                              int indent)
@@ -1586,12 +1648,12 @@ static void emit_enum_type_to_str_annotation(FILE *outfile,
   if (!outfile || !node || !enum_name || !function_prefix) goto exit;
   if (!node->name) goto exit;
 
-  if (!option_annotation()) goto exit;
+  if (!option_annotation(opts)) goto exit;
 
   if (strcmp((char *)node->name, "enum"))
     goto exit;
 
-  switch (option_annotation())
+  switch (option_annotation(opts))
   {
     case annotation_type_doxygen:
       emit_indent(outfile, indent);
@@ -1676,6 +1738,7 @@ exit:
   /**
    *  @fn void emit_aggregate_new_annotation(FILE *outfile,
    *                                         xmlNodePtr node,
+   *                                         options *opts,
    *                                         const char *aggregate_name,
    *                                         const char *function_prefix,
    *                                         int indent)
@@ -1684,6 +1747,7 @@ exit:
    *
    *  @param outfile - open FILE * for writing
    *  @param node - xmlNodePtr containing struct or union element
+   *  @param opts - pointer to @a options struct
    *  @param aggregate_name - string containing aggregate name
    *  @param function_prefix - string containing leading part of function name
    *  @param indent - indent level for output
@@ -1694,6 +1758,7 @@ exit:
   
 static void emit_aggregate_new_annotation(FILE *outfile,
                                           xmlNodePtr node,
+                                          options *opts,
                                           const char *aggregate_name,
                                           const char *function_prefix,
                                           int indent)
@@ -1701,13 +1766,13 @@ static void emit_aggregate_new_annotation(FILE *outfile,
   if (!outfile || !node || !aggregate_name || !function_prefix) goto exit;
   if (!node->name) goto exit;
 
-  if (!option_annotation()) goto exit;
+  if (!option_annotation(opts)) goto exit;
 
   if (strcmp((char *)node->name, "struct") &&
       strcmp((char *)node->name, "union"))
     goto exit;
 
-  switch (option_annotation())
+  switch (option_annotation(opts))
   {
     case annotation_type_doxygen:
       emit_indent(outfile, indent);
@@ -1805,6 +1870,7 @@ exit:
   /**
    *  @fn void emit_aggregate_dup_annotation(FILE *outfile,
    *                                         xmlNodePtr node,
+   *                                         options *opts,
    *                                         const char *aggregate_name,
    *                                         const char *function_prefix,
    *                                         int indent)
@@ -1813,6 +1879,7 @@ exit:
    *
    *  @param outfile - open FILE * for writing
    *  @param node - xmlNodePtr containing struct or union element
+   *  @param opts - pointer to @a options struct
    *  @param aggregate_name - string containing aggregate name
    *  @param function_prefix - string containing leading part of function name
    *  @param indent - indent level for output
@@ -1823,6 +1890,7 @@ exit:
   
 static void emit_aggregate_dup_annotation(FILE *outfile,
                                           xmlNodePtr node,
+                                          options *opts,
                                           const char *aggregate_name,
                                           const char *function_prefix,
                                           int indent)
@@ -1830,13 +1898,13 @@ static void emit_aggregate_dup_annotation(FILE *outfile,
   if (!outfile || !node || !aggregate_name || !function_prefix) goto exit;
   if (!node->name) goto exit;
 
-  if (!option_annotation()) goto exit;
+  if (!option_annotation(opts)) goto exit;
 
   if (strcmp((char *)node->name, "struct") &&
       strcmp((char *)node->name, "union"))
     goto exit;
 
-  switch (option_annotation())
+  switch (option_annotation(opts))
   {
     case annotation_type_doxygen:
       emit_indent(outfile, indent);
@@ -1933,6 +2001,7 @@ exit:
   /**
    *  @fn void emit_aggregate_free_annotation(FILE *outfile,
    *                                          xmlNodePtr node,
+   *                                          options *opts,
    *                                          const char *aggregate_name,
    *                                          const char *function_prefix,
    *                                          int indent)
@@ -1941,6 +2010,7 @@ exit:
    *
    *  @param outfile - open FILE * for writing
    *  @param node - xmlNodePtr containing struct or union element
+   *  @param opts - pointer to @a options struct
    *  @param aggregate_name - string containing aggregate name
    *  @param function_prefix - string containing leading part of function name
    *  @param indent - indent level for output
@@ -1951,6 +2021,7 @@ exit:
   
 static void emit_aggregate_free_annotation(FILE *outfile,
                                            xmlNodePtr node,
+                                           options *opts,
                                            const char *aggregate_name,
                                            const char *function_prefix,
                                            int indent)
@@ -1958,13 +2029,13 @@ static void emit_aggregate_free_annotation(FILE *outfile,
   if (!outfile || !node || !aggregate_name || !function_prefix) goto exit;
   if (!node->name) goto exit;
 
-  if (!option_annotation()) goto exit;
+  if (!option_annotation(opts)) goto exit;
 
   if (strcmp((char *)node->name, "struct") &&
       strcmp((char *)node->name, "union"))
     goto exit;
 
-  switch (option_annotation())
+  switch (option_annotation(opts))
   {
     case annotation_type_doxygen:
       emit_indent(outfile, indent);
@@ -2055,6 +2126,7 @@ exit:
 
   /**
    *  @fn void emit_aggregate_getter_annotation(FILE *outfile,
+   *                                            options *opts,
    *                                            const char *field_type,
    *                                            const char *pointers,
    *                                            const char *function_name,
@@ -2065,6 +2137,7 @@ exit:
    *  @brief emits annotation for aggregate field getter function
    *
    *  @param outfile - open FILE * for writing
+   *  @param opts - pointer to @a options struct
    *  @param field_type - string containing type name of field
    *  @param pointers - string containing preformatted pointer indicators
    *  @param function_name - string containing function name
@@ -2077,6 +2150,7 @@ exit:
    */
   
 static void emit_aggregate_getter_annotation(FILE *outfile,
+                                             options *opts,
                                              const char *field_type,
                                              const char *pointers,
                                              const char *function_name,
@@ -2089,9 +2163,9 @@ static void emit_aggregate_getter_annotation(FILE *outfile,
       !field_name)
     goto exit;
 
-  if (!option_annotation()) goto exit;
+  if (!option_annotation(opts)) goto exit;
 
-  switch (option_annotation())
+  switch (option_annotation(opts))
   {
     case annotation_type_doxygen:
       emit_indent(outfile, indent);
@@ -2191,6 +2265,7 @@ exit:
 
   /**
    *  @fn void emit_aggregate_setter_annotation(FILE *outfile,
+   *                                            options *opts,
    *                                            const char *field_type,
    *                                            const char *pointers,
    *                                            const char *function_name,
@@ -2201,6 +2276,7 @@ exit:
    *  @brief emits annotation for aggregate field setter function
    *
    *  @param outfile - open FILE * for writing
+   *  @param opts - pointer to @a options struct
    *  @param field_type - string containing type name of field
    *  @param pointers - string containing preformatted pointer indicators
    *  @param function_name - string containing function name
@@ -2213,6 +2289,7 @@ exit:
    */
   
 static void emit_aggregate_setter_annotation(FILE *outfile,
+                                             options *opts,
                                              const char *field_type,
                                              const char *pointers,
                                              const char *function_name,
@@ -2225,9 +2302,9 @@ static void emit_aggregate_setter_annotation(FILE *outfile,
       !field_name)
     goto exit;
 
-  if (!option_annotation()) goto exit;
+  if (!option_annotation(opts)) goto exit;
 
-  switch (option_annotation())
+  switch (option_annotation(opts))
   {
     case annotation_type_doxygen:
       emit_indent(outfile, indent);

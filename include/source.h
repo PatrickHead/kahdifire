@@ -29,6 +29,6 @@
 
 #include "common.h"
 
-void gen_source(xmlDocPtr doc, const char *base_name);
+void gen_source(xmlDocPtr doc, options *opts, const char *base_name);
 
 #endif //SOURCE_H

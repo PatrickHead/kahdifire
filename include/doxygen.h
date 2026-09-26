@@ -31,7 +31,7 @@
 #include "options.h"
 
 void gen_doxygen_configuration(xmlDocPtr doc,
-                               const char *base_name,
-                               options *opts);
+                               options *opts,
+                               const char *base_name);
 
 #endif //DOXYGEN_H
