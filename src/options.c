@@ -239,10 +239,14 @@ void option_set_makefile_options(options *opts, const char *optlist)
 {
   char *opt = NULL;
   char *val = NULL;
+  char *list = NULL;
 
-  if (!opts || !optlist) return;
+  if (!opts || !optlist) goto exit;
 
-  for (opt = strtok((char *)optlist, ","); opt; opt = strtok(NULL, ","))
+  list = strdup(optlist);
+  if (!list) goto exit;
+
+  for (opt = strtok(list, ","); opt; opt = strtok(NULL, ","))
   {
     val = strchr(opt, '=');
     if (val)
@@ -256,6 +260,11 @@ void option_set_makefile_options(options *opts, const char *optlist)
           strncpy(opts->makefile_install_dir, val, 255);
     }
   }
+
+exit:
+  if (list) free(list);
+
+  return;
 }
 
   /**
